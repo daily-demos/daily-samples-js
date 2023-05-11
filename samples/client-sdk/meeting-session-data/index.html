@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Daily Meeting Session State</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./style.css" rel="stylesheet" />  
+</head>
+  <body>
+    <noscript>
+        This application requires JavaScript to run. Please enable JavaScript in
+        your browser.
+    </noscript>
+    <div id="container">
+        <div id="controls">
+            <button id="joke" disabled>Tell a joke!</button>
+            <button id="mic" disabled>Toggle Microphone</button>
+            <button id="cam" disabled>Toggle Camera</button>
+            <button id="leave" disabled>Leave Meeting</button>
+        </div>
+        <div id="jokeEle" class="hidden"></div>
+        <div id="participants"></div>
+    </div>
+    <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
+    <script  type="module" src="./index.js"></script>
+  </body>
+</html>
