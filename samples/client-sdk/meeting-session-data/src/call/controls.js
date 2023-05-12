@@ -1,3 +1,28 @@
+export function setupJoinForm(callObject) {
+  const joinForm = getJoinForm();
+  joinForm.onsubmit = (ev) => {
+    ev.preventDefault();
+
+    // Disable join button to avoid double-join attempts
+    const btn = joinForm.getElementsByTagName('button')[0];
+    btn.disabled = true;
+
+    const roomURLInput = joinForm.getElementsByTagName('input')[0];
+    try {
+      callObject.join({ url: roomURLInput.value });
+    } catch (e) {
+      console.error('Failed to join Daily room', e);
+      enableJoinForm();
+    }
+  };
+}
+
+export function enableJoinForm() {
+  const joinForm = getJoinForm();
+  const btn = joinForm.getElementsByTagName('button')[0];
+  btn.disabled = false;
+}
+
 export function setupMicToggle(callObject) {
   const btn = getMicBtn();
   btn.onclick = () => {
@@ -43,7 +68,8 @@ export function enableControls(callObject) {
   setupMicToggle(callObject);
   setupCamToggle(callObject);
   setupLeave(callObject);
-  const allButtons = document.getElementsByTagName('button');
+  const incallEle = document.getElementById('incall');
+  const allButtons = incallEle.getElementsByTagName('button');
   for (let i = 0; i < allButtons.length; i += 1) {
     const btn = allButtons[i];
     btn.disabled = false;
@@ -51,11 +77,13 @@ export function enableControls(callObject) {
 }
 
 export function disableControls() {
-  const allButtons = document.getElementsByTagName('button');
+  const incallEle = document.getElementById('incall');
+  const allButtons = incallEle.getElementsByTagName('button');
   for (let i = 0; i < allButtons.length; i += 1) {
     const btn = allButtons[i];
     btn.disabled = true;
   }
+  enableJoinForm();
 }
 
 function getMicBtn() {
@@ -68,4 +96,8 @@ function getCamBtn() {
 
 function getLeaveBtn() {
   return document.getElementById('leave');
+}
+
+function getJoinForm() {
+  return document.getElementById('join');
 }

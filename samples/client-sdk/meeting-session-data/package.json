@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "A small meeting session data sample",
     "scripts": {
-        "dev": "http-server -c-1 --cors='*'"
+        "dev": "http-server src/ -c-1 --cors='*'"
     },
     "repository": {
         "type": "git",

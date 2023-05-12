@@ -11,12 +11,21 @@
         This application requires JavaScript to run. Please enable JavaScript in
         your browser.
     </noscript>
+    <div id="header">
+      <span>meeting session data sample</span><span>powered by <a href="https://docs.daily.co">//daily</a></span>
+    </div>
     <div id="container">
         <div id="controls">
-            <button id="joke" disabled>Tell a joke!</button>
-            <button id="mic" disabled>Toggle Microphone</button>
-            <button id="cam" disabled>Toggle Camera</button>
-            <button id="leave" disabled>Leave Meeting</button>
+            <form id="join">
+              Room URL: <input type="url" id="url" required />
+              <button type="submit">Join</button>
+            </form>
+            <div id="incall">
+              <button id="joke" disabled>Tell a joke!</button>
+              <button id="mic" disabled>Toggle Microphone</button>
+              <button id="cam" disabled>Toggle Camera</button>
+              <button id="leave" disabled>Leave</button>
+            </div>
         </div>
         <div id="jokeEle" class="hidden"></div>
         <div id="participants"></div>
