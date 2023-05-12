@@ -12,7 +12,7 @@ Run the following commands in your terminal:
 
 ```bash
 git clone git@github.com:daily-demos/daily-samples-js.git
-cd `daily-samples-js/samples/client-sdk/meeting-session-data`
+cd daily-samples-js/samples/client-sdk/meeting-session-data
 npm i
 npm run dev
 ```
