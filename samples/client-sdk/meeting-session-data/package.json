@@ -1,0 +1,21 @@
+{
+    "name": "daily-meeting-session-data",
+    "version": "1.0.0",
+    "description": "A small meeting session data sample",
+    "scripts": {
+        "dev": "http-server src/ -c-1 --cors='*'"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/daily-demos/daily-samples-js.git"
+    },
+    "author": "",
+    "license": "BSD-2-Clause",
+    "bugs": {
+        "url": "https://github.com/daily-demos/daily-samples-js/issues"
+    },
+    "homepage": "https://github.com/daily-demos/daily-samples-js#readme",
+    "devDependencies": {
+        "http-server": "^14.1.1"
+    }
+}

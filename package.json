@@ -1,0 +1,28 @@
+{
+    "name": "daily-samples-js",
+    "version": "1.0.0",
+    "description": "A monorepo to contain small Daily JavaScript code samples",
+    "main": "index.js",
+    "scripts": {
+      "lint": "eslint './**/*.js'",
+      "lintFix": "eslint './**/*.js' --fix"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/daily-demos/daily-samples-js.git"
+    },
+    "author": "",
+    "license": "BSD-2-Clause",
+    "bugs": {
+      "url": "https://github.com/daily-demos/daily-samples-js/issues"
+    },
+    "homepage": "https://github.com/daily-demos/daily-samples-js#readme",
+    "devDependencies": {
+      "eslint": "^8.17.0",
+      "eslint-config-airbnb-base": "^15.0.0",
+      "eslint-config-prettier": "^8.5.0",
+      "eslint-plugin-import": "^2.26.0",
+      "eslint-plugin-prettier": "^4.0.0"
+    }
+  }
+  
