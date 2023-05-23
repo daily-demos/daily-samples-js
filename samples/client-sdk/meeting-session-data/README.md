@@ -1,6 +1,6 @@
 # Meeting Session Data Sample
 
-This small sample app shows the use of Daily's [meeting session data](LINK) feature. This feature enables developers to set shared state for the entire session. 
+This small sample app shows the use of Daily's meeting session data feature. This feature enables developers to set shared state for the entire session. 
 
 In this sample, participants of a Daily-powered video call can click a "Tell a Joke!" button to set a randomly-generated dad joke for everyone in the call. 
 
