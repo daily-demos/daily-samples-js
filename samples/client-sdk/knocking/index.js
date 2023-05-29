@@ -247,16 +247,6 @@ const denyAccess = () => {
   });
 };
 
-const handleError = (e) => {
-  logEvent(e);
-  // The request to join (knocking) was rejected :(
-  if (e.errorMsg === 'Join request rejected') {
-    // Update UI so the guest knows their request was denied
-    hideWaitingRoomText();
-    showRejectedFromCallText();
-  }
-};
-
 const addOwnerEvents = () => {
   callObject
     .on('joined-meeting', handleJoinedMeeting)
@@ -324,6 +314,16 @@ const submitOwnerForm = (e) => {
  * GUEST-RELATED FUNCTIONS
  */
 
+const handleRejection = (e) => {
+  logEvent(e);
+  // The request to join (knocking) was rejected :(
+  if (e.errorMsg === 'Join request rejected') {
+    // Update UI so the guest knows their request was denied
+    hideWaitingRoomText();
+    showRejectedFromCallText();
+  }
+};
+
 const addGuestEvents = () => {
   callObject
     .on('joined-meeting', checkAccessLevel)
@@ -331,7 +331,7 @@ const addGuestEvents = () => {
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
     .on('participant-left', handleParticipantLeft)
-    .on('error', handleError)
+    .on('error', handleRejection)
     .on('access-state-updated', handleAccessStateUpdate);
 };
 
