@@ -2,7 +2,7 @@
 let callObject;
 
 // Log events as they are triggered to see what's happening throughout the call
-const logEvent = (e) => console.log("Daily event: ", e);
+const logEvent = (e) => console.log('Daily event: ', e);
 
 /**
  *
@@ -11,52 +11,52 @@ const logEvent = (e) => console.log("Daily event: ", e);
 
 const showOwnerPanel = () => {
   // Show the allow/deny buttons for anyone in the waiting room
-  const buttons = document.getElementById("ownerKnockingButtons");
-  buttons.classList.remove("hide");
+  const buttons = document.getElementById('ownerKnockingButtons');
+  buttons.classList.remove('hide');
 };
 
 const hideOwnerPanel = () => {
   // Hide the allow/deny buttons for anyone in the waiting room
-  const buttons = document.getElementById("ownerKnockingButtons");
-  buttons.classList.add("hide");
+  const buttons = document.getElementById('ownerKnockingButtons');
+  buttons.classList.add('hide');
 };
 
 const showWaitingRoomText = () => {
   // Show waiting room message after knocking
-  const guestKnockingMsg = document.getElementById("guestKnocking");
-  guestKnockingMsg.classList.remove("hide");
+  const guestKnockingMsg = document.getElementById('guestKnocking');
+  guestKnockingMsg.classList.remove('hide');
 };
 
 const hideWaitingRoomText = () => {
   // Show waiting room message after knocking
-  const guestKnockingMsg = document.getElementById("guestKnocking");
-  guestKnockingMsg.classList.add("hide");
+  const guestKnockingMsg = document.getElementById('guestKnocking');
+  guestKnockingMsg.classList.add('hide');
 };
 
 const showLoadingText = (type) => {
   // Show loading text when a participant is joining/knocking
-  const id = type === "owner" ? "ownerLoading" : "guestLoading";
+  const id = type === 'owner' ? 'ownerLoading' : 'guestLoading';
   const loading = document.getElementById(id);
-  loading.classList.remove("hide");
+  loading.classList.remove('hide');
 };
 
 const hideLoadingText = (type) => {
   // Hide loading text in UI
-  const id = type === "owner" ? "ownerLoading" : "guestLoading";
+  const id = type === 'owner' ? 'ownerLoading' : 'guestLoading';
   const loading = document.getElementById(id);
-  loading.classList.add("hide");
+  loading.classList.add('hide');
 };
 
 const showRejectedFromCallText = () => {
   // Show message a knocking request was denied
-  const guestDenied = document.getElementById("guestDenied");
-  guestDenied.classList.remove("hide");
+  const guestDenied = document.getElementById('guestDenied');
+  guestDenied.classList.remove('hide');
 };
 
 const hideRejectedFromCallText = () => {
   // Hide message a knocking request was denied
-  const guestDenied = document.getElementById("guestDenied");
-  guestDenied.classList.add("hide");
+  const guestDenied = document.getElementById('guestDenied');
+  guestDenied.classList.add('hide');
 };
 
 /**
@@ -75,7 +75,7 @@ const submitOwnerForm = (e) => {
   const token = e.target.token.value;
   // Log error if any form input is empty
   if (!name.trim() || !url.trim() || !token.trim()) {
-    console.error("Fill out form");
+    console.error('Fill out form');
     return;
   }
   // Initialize the call object and let the owner join/enter the call
@@ -84,20 +84,20 @@ const submitOwnerForm = (e) => {
 
 const addOwnerEvents = () => {
   callObject
-    .on("joined-meeting", handleJoinedMeeting)
-    .on("left-meeting", logEvent)
-    .on("participant-joined", logEvent)
-    .on("participant-updated", handleParticipantUpdate)
-    .on("participant-left", handleParticipantLeft)
-    .on("waiting-participant-added", addWaitingParticipant)
-    .on("waiting-participant-updated", logEvent)
-    .on("waiting-participant-removed", updateWaitingParticipant)
-    .on("error", logEvent);
+    .on('joined-meeting', handleJoinedMeeting)
+    .on('left-meeting', logEvent)
+    .on('participant-joined', logEvent)
+    .on('participant-updated', handleParticipantUpdate)
+    .on('participant-left', handleParticipantLeft)
+    .on('waiting-participant-added', addWaitingParticipant)
+    .on('waiting-participant-updated', logEvent)
+    .on('waiting-participant-removed', updateWaitingParticipant)
+    .on('error', logEvent);
 };
 
 // The owner will go right into the call since they have appropriate permissions
 const createOwnerCall = async ({ name, url, token }) => {
-  showLoadingText("owner");
+  showLoadingText('owner');
 
   // Create call object
   callObject = await window.DailyIframe.createCallObject();
@@ -112,17 +112,17 @@ const createOwnerCall = async ({ name, url, token }) => {
 
     // Confirm the participant is an owner of the call (i.e. can respond to knocking)
     if (join.local.owner !== true) {
-      console.error("This participant is not a meeting owner!");
+      console.error('This participant is not a meeting owner!');
     } else {
-      console.log("This participant is a meeting owner! :)");
+      console.log('This participant is a meeting owner! :)');
     }
 
     // Update UI after call is joined
-    hideLoadingText("owner");
+    hideLoadingText('owner');
     showOwnerPanel();
   } catch (error) {
-    console.log("Owner join failed: ", error);
-    loading.classList.add("hide");
+    console.log('Owner join failed: ', error);
+    loading.classList.add('hide');
   }
 };
 
@@ -140,7 +140,7 @@ const submitKnockingForm = (e) => {
 
   // Log error if either form input is empty
   if (!name.trim() || !url.trim()) {
-    console.error("Fill out form");
+    console.error('Fill out form');
     return;
   }
 
@@ -153,19 +153,19 @@ const submitKnockingForm = (e) => {
 
 const addGuestEvents = () => {
   callObject
-    .on("joined-meeting", checkAccessLevel)
-    .on("left-meeting", logEvent)
-    .on("participant-joined", logEvent)
-    .on("participant-updated", handleParticipantUpdate)
-    .on("participant-left", handleParticipantLeft)
-    .on("error", handleError)
-    .on("access-state-updated", handleAccessStateUpdate);
+    .on('joined-meeting', checkAccessLevel)
+    .on('left-meeting', logEvent)
+    .on('participant-joined', logEvent)
+    .on('participant-updated', handleParticipantUpdate)
+    .on('participant-left', handleParticipantLeft)
+    .on('error', handleError)
+    .on('access-state-updated', handleAccessStateUpdate);
 };
 
 // This function will create the call object and "join" the call.
 // Joining for guests means going into the lobby and waiting for an owner to let them in.
 const createGuestCall = async ({ name, url }) => {
-  showLoadingText("guest");
+  showLoadingText('guest');
 
   // Create call object
   callObject = await window.DailyIframe.createCallObject();
@@ -180,33 +180,33 @@ const createGuestCall = async ({ name, url }) => {
 
     // Confirm that the guest actually needs to knock
     const permissions = await checkAccessLevel();
-    console.log("access level: ", permissions);
+    console.log('access level: ', permissions);
 
     // If they're in the lobby, they need to knock
-    if (permissions === "lobby") {
+    if (permissions === 'lobby') {
       // Guests must call .join() before they can knock to enter the call
       await callObject.join();
 
       // Update UI to show they're now in the waiting room
-      hideLoadingText("guest");
+      hideLoadingText('guest');
       showWaitingRoomText();
 
       // Request full access to the call (i.e. knock to enter)
       await callObject.requestAccess({ name });
-    } else if (permissions === "full") {
+    } else if (permissions === 'full') {
       // If the guest can join the call, it's probably not a private room.
       console.error(
-        "Participant does not need to knock. Please review the README instructions."
+        'Participant does not need to knock. Please review the README instructions.'
       );
       // Update UI
-      hideLoadingText("guest");
+      hideLoadingText('guest');
       // Join the call
       await callObject.join();
     } else {
-      console.error("Something went wrong while joining.");
+      console.error('Something went wrong while joining.');
     }
   } catch (error) {
-    console.log("Guest knocking failed: ", error);
+    console.log('Guest knocking failed: ', error);
   }
 };
 
@@ -242,9 +242,9 @@ const handleJoinedMeeting = (e) => {
 
 const handleParticipantUpdate = async (e) => {
   const level = await checkAccessLevel();
-  console.log("current level: ", level);
+  console.log('current level: ', level);
   // Don't use this event for participants who are waiting to join
-  if (level === "lobby") return;
+  if (level === 'lobby') return;
 
   // Don't use this event for the local participant
   const participant = e?.participant;
@@ -255,7 +255,7 @@ const handleParticipantUpdate = async (e) => {
   const vid = findVideoForParticipant(participant.session_id);
   if (!vid) {
     // No video found for remote participant after update. Add one.
-    console.log("Adding new video");
+    console.log('Adding new video');
     addParticipantVideo(participant);
   }
 };
@@ -272,17 +272,17 @@ const handleParticipantLeft = (e) => {
 const addParticipantVideo = async (participant) => {
   if (!participant) return;
   // If the participant is an owner, we'll put them up top; otherwise, in the guest container
-  let videoContainer = document.getElementById(
-    participant.owner ? "ownerVideo" : "guestVideo"
+  const videoContainer = document.getElementById(
+    participant.owner ? 'ownerVideo' : 'guestVideo'
   );
 
   let vid = findVideoForParticipant(participant.session_id);
   // Only add the video if it's not already in the UI
   if (!vid && participant.video) {
     // Create video element, set attributes
-    vid = document.createElement("video");
+    vid = document.createElement('video');
     vid.session_id = participant.session_id;
-    vid.style.width = "100%";
+    vid.style.width = '100%';
     vid.autoplay = true;
     vid.muted = true;
     vid.playsInline = true;
@@ -295,7 +295,7 @@ const addParticipantVideo = async (participant) => {
 
 const findVideoForParticipant = (session_id) => {
   // Find the video element with a session id that matches
-  for (const vid of document.getElementsByTagName("video")) {
+  for (const vid of document.getElementsByTagName('video')) {
     if (vid.session_id === session_id) {
       return vid;
     }
@@ -304,9 +304,9 @@ const findVideoForParticipant = (session_id) => {
 
 const handleAccessStateUpdate = (e) => {
   // If the access level has changed to full, the knocking participant has been let in.
-  if (e.access.level === "full") {
+  if (e.access.level === 'full') {
     // Add the participant's video (it will only be added if it doesn't already exist)
-    const local = callObject.participants().local;
+    const { local } = callObject.participants();
     addParticipantVideo(local);
     // Update messaging in UI
     hideWaitingRoomText();
@@ -317,14 +317,14 @@ const handleAccessStateUpdate = (e) => {
 
 const leaveCall = async () => {
   if (callObject) {
-    console.log("leaving call");
+    console.log('leaving call');
     // Clean up callObject so the demo can be used again
     await callObject.leave();
     await callObject.destroy();
     callObject = null;
 
     // Remove all video elements
-    const videoEls = [...document.getElementsByTagName("video")];
+    const videoEls = [...document.getElementsByTagName('video')];
     videoEls.forEach((v) => v.remove());
 
     // Reset UI messaging
@@ -334,7 +334,7 @@ const leaveCall = async () => {
 
     // Todo: add .off() events: https://docs.daily.co/reference/rn-daily-js/instance-methods/off
   } else {
-    console.log("not in a call to leave");
+    console.log('not in a call to leave');
   }
 };
 
@@ -343,7 +343,7 @@ const leaveCall = async () => {
  * KNOCKING-RELATED FUNCTIONS
  */
 const allowAccess = () => {
-  console.log("allow guest in");
+  console.log('allow guest in');
   // Retrieve list of waiting participants
   const waiting = callObject.waitingParticipants();
 
@@ -359,7 +359,7 @@ const allowAccess = () => {
 };
 
 const denyAccess = () => {
-  console.log("deny guest access");
+  console.log('deny guest access');
   const waiting = callObject.waitingParticipants();
 
   const waitList = Object.keys(waiting);
@@ -374,7 +374,7 @@ const denyAccess = () => {
 const handleError = (e) => {
   logEvent(e);
   // The request to join (knocking) was rejected :(
-  if (e.errorMsg === "Join request rejected") {
+  if (e.errorMsg === 'Join request rejected') {
     // Update UI so the guest knows their request was denied
     hideWaitingRoomText();
     showRejectedFromCallText();
@@ -383,9 +383,9 @@ const handleError = (e) => {
 };
 
 const addWaitingParticipant = (e) => {
-  const list = document.getElementById("knockingList");
-  const li = document.createElement("li");
-  li.setAttribute("id", e.participant.id);
+  const list = document.getElementById('knockingList');
+  const li = document.createElement('li');
+  li.setAttribute('id', e.participant.id);
   li.innerHTML = `${e.participant.name}: ${e.participant.id}`;
   // Add new list item to ul element for owner to see
   list.appendChild(li);
@@ -395,7 +395,7 @@ const updateWaitingParticipant = (e) => {
   logEvent(e);
   // Get the li of the waiting participant who was removed from the list
   // They would be "removed" whether they were accepted or rejected -- they're just not waiting anymore.
-  const id = e.participant.id;
+  const { id } = e.participant;
   const li = document.getElementById(id);
   // If the li exists, remove it from the list
   if (li) {
@@ -407,17 +407,17 @@ const updateWaitingParticipant = (e) => {
  *
  * EVENT LISTENERS
  */
-const knockingForm = document.getElementById("knockingForm");
-knockingForm.addEventListener("submit", submitKnockingForm);
+const knockingForm = document.getElementById('knockingForm');
+knockingForm.addEventListener('submit', submitKnockingForm);
 
-const ownerForm = document.getElementById("ownerForm");
-ownerForm.addEventListener("submit", submitOwnerForm);
+const ownerForm = document.getElementById('ownerForm');
+ownerForm.addEventListener('submit', submitOwnerForm);
 
-const allowAccessButton = document.getElementById("allowAccessButton");
-allowAccessButton.addEventListener("click", allowAccess);
+const allowAccessButton = document.getElementById('allowAccessButton');
+allowAccessButton.addEventListener('click', allowAccess);
 
-const denyAccessButton = document.getElementById("denyAccessButton");
-denyAccessButton.addEventListener("click", denyAccess);
+const denyAccessButton = document.getElementById('denyAccessButton');
+denyAccessButton.addEventListener('click', denyAccess);
 
-const leaveButton = document.getElementById("leaveButton");
-leaveButton.addEventListener("click", leaveCall);
+const leaveButton = document.getElementById('leaveButton');
+leaveButton.addEventListener('click', leaveCall);
