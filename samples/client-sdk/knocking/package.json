@@ -1,0 +1,22 @@
+{
+  "name": "daily-knocking-sample",
+  "version": "1.0.0",
+  "description": "Basic demo app for Daily knocking feature",
+  "main": "index.js",
+  "scripts": {
+    "start": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jessmitch42/daily-knocking-sample.git"
+  },
+  "author": "Jess Mitchell",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jessmitch42/daily-knocking-sample/issues"
+  },
+  "homepage": "https://github.com/jessmitch42/daily-knocking-sample#readme",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}

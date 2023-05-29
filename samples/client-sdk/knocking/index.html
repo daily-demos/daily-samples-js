@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Knocking demo app (Daily)</title>
+    <link rel="stylesheet" href="./index.css" />
+    <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>Knocking example</h1>
+      <p>Use a private room to test this feature.</p>
+      <p>A meeting owner must be in the call to respond to knocking.</p>
+      <p>Only use one form at a time. Open a new window to test both forms.</p>
+      <button id="leaveButton">Leave call</button>
+      <div class="calls">
+        <div class="owner-container">
+          <div class="form-container">
+            <h2>Meeting owner form</h2>
+            <form id="ownerForm">
+              <label for="name">Your name</label>
+              <input type="text" id="name" value="owner" required />
+              <br />
+              <label for="url">Daily room URL</label>
+              <input type="text" id="url" required />
+              <br />
+              <label for="token">Owner token</label>
+              <input type="text" id="token" required />
+              <br />
+              <input type="submit" value="Join call" />
+            </form>
+          </div>
+          <div class="video-container">
+            <h3>Owner video</h3>
+            <p id="ownerLoading" class="hide">Loading...</p>
+            <div id="ownerVideo"></div>
+            <div id="ownerKnockingButtons" class="hide">
+              <h3>Waiting room list</h3>
+              <ul id="knockingList"></ul>
+              <hr />
+              <p>
+                Wait for a guest to join the list before responding. If multiple
+                guests are waiting, your response will apply to everyone.
+              </p>
+              <h4>Respond to knocking</h4>
+              <button id="allowAccessButton">Allow access</button>
+              <button id="denyAccessButton">Deny guest access</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="guest-container">
+          <div class="form-container">
+            <h2>Guest form</h2>
+            <form id="knockingForm">
+              <label for="name">Your name</label>
+              <input type="text" id="name" value="guest" required />
+              <br />
+              <label for="url">Daily room URL</label>
+              <input type="text" id="url" />
+              <br />
+              <input type="submit" value="Knock to enter call" required />
+            </form>
+          </div>
+          <div class="video-container">
+            <h3>Guest video</h3>
+            <p id="guestLoading" class="hide">Loading...</p>
+            <div id="guestVideo"></div>
+            <div id="guestKnocking" class="hide">
+              <h4>Your are in the waiting room.</h4>
+              <p>
+                If an owner is in the call, they will be notified you have
+                knocked and are waiting to enter.
+              </p>
+            </div>
+            <div id="guestDenied" class="hide">
+              <h4>Your request to join has been denied :(</h4>
+              <p>The owner of the call will not let you enter this call.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+    </div>
+    <script src="./index.js"></script>
+  </body>
+</html>
