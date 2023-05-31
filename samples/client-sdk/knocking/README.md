@@ -43,7 +43,7 @@ curl -H "Content-Type: application/json" \
 
 ## Run demo locally
 
-To run this demo locally, start by cloning this repo locally and navigate to the repo's directory. Next, you can either:
+To run this demo locally, start by cloning this repo locally and navigating to the repo's directory. Next, you can either:
 
 - Open the `index.html` file in your browser, or;
 - Run the following commands to start a local server:
