@@ -27,14 +27,23 @@ curl -H "Content-Type: application/json" \
 
 **Note:** This demo app assumes cameras will be turned on by default when a participant joins. This is the default setting for new rooms. The [`start_video_off`](https://docs.daily.co/reference/rest-api/rooms/config#start_video_off) setting should be `false`.
 
-3. An owner meeting token, which you can create with the following cURL command:
+3. An owner meeting token, which you can create with the following cURL command. Remember to set your API key and the expiry time, which should be a unix timestamp.
 
 ```
 curl -H "Content-Type: application/json" \
      -H "Authorization: Bearer $DAILY_API_KEY" \
      -XPOST -d '{"properties":
-                  {"is_owner":true, "room_name":"room-name"}}' \
+                  {"is_owner":true,
+                  "room_name":"room-name",
+                  "exp": $UNIX_TIMESTAMP}}' \
      https://api.daily.co/v1/meeting-tokens
+```
+
+If you aren't sure how to get a timestamp, print the following JavaScript variable, which will return a timestamp for 24 hours from the current time:
+
+```javascript
+const tomorrow = Math.floor(Date.now()/1000)+86400
+console.log(tomorrow)
 ```
 
 **Note:** You must set the `is_owner` configuration to `true`. If you do not, you will be able to join the call but will not have owner privileges to respond to guests knocking.
