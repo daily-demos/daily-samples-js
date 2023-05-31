@@ -354,9 +354,11 @@ const submitOwnerForm = (e) => {
   // Do not try to create new call object if it already exists
   if (callObject) return;
   // Get form values
-  const name = e.target.name.value;
-  const url = e.target.url.value;
-  const token = e.target.token.value;
+  const target = e.target;
+  const name = target.ownerName.value;
+  const url = target.ownerURL.value;
+  const token = target.token.value;
+
   // Log error if any form input is empty
   if (!name.trim() || !url.trim() || !token.trim()) {
     console.error('Fill out form');
@@ -446,9 +448,13 @@ const createGuestCall = async ({ name, url }) => {
 const submitKnockingForm = (e) => {
   e.preventDefault();
 
+  // Do not try to create new call object if it already exists
+  if (callObject) return;
+
   // Get form values
-  const name = e.target.name.value;
-  const url = e.target.url.value;
+  const target = e.target;
+  const name = target.guestName.value;
+  const url = target.guestURL.value;
 
   // Log error if either form input is empty
   if (!name.trim() || !url.trim()) {
