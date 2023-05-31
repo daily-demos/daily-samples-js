@@ -59,6 +59,51 @@ const hideRejectedFromCallText = () => {
   guestDenied.classList.add('hide');
 };
 
+const showLeaveButton = () => {
+  const leaveButton = document.getElementById('leaveButton');
+  leaveButton.classList.remove('hide');
+};
+
+const hideLeaveButton = () => {
+  const leaveButton = document.getElementById('leaveButton');
+  leaveButton.classList.add('hide');
+};
+
+const showVideos = () => {
+  const videos = document.getElementsByClassName('video-container');
+  console.log('videos:', videos);
+  for (let i = 0; i < videos.length; i += 1) {
+    const video = videos[i];
+    video.classList.remove('hide');
+  }
+};
+
+const hideVideos = () => {
+  const videos = document.getElementsByClassName('video-container');
+  console.log('videos2:', videos);
+  for (let i = 0; i < videos.length; i += 1) {
+    const video = videos[i];
+    video.classList.add('hide');
+  }
+};
+
+const showForms = () => {
+  const forms = document.getElementsByClassName('form-container');
+  console.log('showing forms:', forms);
+  for (let i = 0; i < forms.length; i += 1) {
+    const form = forms[i];
+    form.classList.remove('hide');
+  }
+};
+
+const hideForms = () => {
+  const forms = document.getElementsByClassName('form-container');
+  for (let i = 0; i < forms.length; i += 1) {
+    const form = forms[i];
+    form.classList.add('hide');
+  }
+};
+
 /**
  *
  * VIDEO/EVENT-RELATED FUNCTIONS
@@ -112,6 +157,9 @@ const checkAccessLevel = async () => {
 };
 
 const handleJoinedMeeting = (e) => {
+  hideForms();
+  showVideos();
+  showLeaveButton();
   const participant = e?.participants?.local;
   // This demo assumes videos are on when the call starts since there aren't media controls in the UI.
   if (!participant?.tracks?.video) {
@@ -123,6 +171,13 @@ const handleJoinedMeeting = (e) => {
     return;
   }
   addParticipantVideo(participant);
+};
+
+const handleLeftMeeting = (e) => {
+  logEvent(e);
+  showForms();
+  hideVideos();
+  hideLeaveButton();
 };
 
 const handleParticipantUpdate = async (e) => {
@@ -250,7 +305,7 @@ const denyAccess = () => {
 const addOwnerEvents = () => {
   callObject
     .on('joined-meeting', handleJoinedMeeting)
-    .on('left-meeting', logEvent)
+    .on('left-meeting', handleLeftMeeting)
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
     .on('participant-left', handleParticipantLeft)
@@ -327,7 +382,7 @@ const handleRejection = (e) => {
 const addGuestEvents = () => {
   callObject
     .on('joined-meeting', checkAccessLevel)
-    .on('left-meeting', logEvent)
+    .on('left-meeting', handleLeftMeeting)
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
     .on('participant-left', handleParticipantLeft)
@@ -363,6 +418,9 @@ const createGuestCall = async ({ name, url }) => {
       // Update UI to show they're now in the waiting room
       hideLoadingText('guest');
       showWaitingRoomText();
+      hideForms();
+      showLeaveButton();
+      showVideos();
 
       // Request full access to the call (i.e. knock to enter)
       await callObject.requestAccess({ name });

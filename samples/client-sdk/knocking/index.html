@@ -14,7 +14,7 @@
       <p>Use a private room to test this feature.</p>
       <p>A meeting owner must be in the call to respond to knocking.</p>
       <p>Only use one form at a time. Open a new window to test both forms.</p>
-      <button id="leaveButton">Leave call</button>
+      <button id="leaveButton" class="hide">Leave call</button>
       <div class="calls">
         <div class="owner-container">
           <div class="form-container">
@@ -32,7 +32,7 @@
               <input type="submit" value="Join call" />
             </form>
           </div>
-          <div class="video-container">
+          <div class="video-container hide">
             <h3>Owner video</h3>
             <p id="ownerLoading" class="hide">Loading...</p>
             <div id="ownerVideo"></div>
@@ -64,7 +64,7 @@
               <input type="submit" value="Knock to enter call" required />
             </form>
           </div>
-          <div class="video-container">
+          <div class="video-container hide">
             <h3>Guest video</h3>
             <p id="guestLoading" class="hide">Loading...</p>
             <div id="guestVideo"></div>
