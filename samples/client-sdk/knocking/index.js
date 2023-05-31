@@ -92,15 +92,16 @@ const showForms = () => {
   console.log('showing forms:', forms);
   for (let i = 0; i < forms.length; i += 1) {
     const form = forms[i];
-    form.classList.remove('hide');
+    form.classList.remove('invisible');
   }
 };
 
-const hideForms = () => {
-  const forms = document.getElementsByClassName('form-container');
+const hideForms = (formToHide) => {
+  const forms = document.getElementsByClassName(`form-container ${formToHide}`);
   for (let i = 0; i < forms.length; i += 1) {
     const form = forms[i];
-    form.classList.add('hide');
+    // Keep in DOM but don't show to avoid elements shifting
+    form.classList.add('invisible');
   }
 };
 
@@ -157,7 +158,8 @@ const checkAccessLevel = async () => {
 };
 
 const handleJoinedMeeting = (e) => {
-  hideForms();
+  // Hide form that wasn't used
+  hideForms(e?.participants?.local.owner ? 'guest' : 'owner');
   showVideos();
   showLeaveButton();
   const participant = e?.participants?.local;
@@ -382,7 +384,7 @@ const handleRejection = (e) => {
 const addGuestEvents = () => {
   callObject
     .on('joined-meeting', checkAccessLevel)
-    .on('left-meeting', handleLeftMeeting)
+    .on('left-meeting', logEvent)
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
     .on('participant-left', handleParticipantLeft)
@@ -418,7 +420,7 @@ const createGuestCall = async ({ name, url }) => {
       // Update UI to show they're now in the waiting room
       hideLoadingText('guest');
       showWaitingRoomText();
-      hideForms();
+      hideForms('owner');
       showLeaveButton();
       showVideos();
 

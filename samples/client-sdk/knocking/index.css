@@ -33,6 +33,10 @@ ul {
   display: none;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 button,
 input[type="submit"] {
   padding: 4px 8px;
