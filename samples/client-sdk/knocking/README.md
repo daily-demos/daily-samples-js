@@ -71,7 +71,7 @@ To join as a meeting owner, fill out the _Meeting owner form_ with your name, th
 
 ---
 
-Once you join, you will see your video and a waiting room list. Guests that have knocked to join your call will show in the list. If there are guests awaiting, you can press the "Allow access" or "Deny guest access" buttons to let them in or reject them.
+Once you join, you will see your video and a waiting room list. Guests that have knocked to join your call will show in the list. If there are guests awaiting admittance, you can press the "Allow access" or "Deny guest access" buttons to let them in or reject them.
 
 ### Join as a guest
 
