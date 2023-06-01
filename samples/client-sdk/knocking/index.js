@@ -240,6 +240,7 @@ const leaveCall = async () => {
     hideOwnerPanel();
     hideWaitingRoomText();
     hideRejectedFromCallText();
+    showForms();
 
     // Todo: add .off() events: https://docs.daily.co/reference/rn-daily-js/instance-methods/off
   } else {
