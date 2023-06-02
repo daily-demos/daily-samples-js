@@ -14,25 +14,25 @@
       <p>Use a private room to test this feature.</p>
       <p>A meeting owner must be in the call to respond to knocking.</p>
       <p>Only use one form at a time. Open a new window to test both forms.</p>
-      <button id="leaveButton">Leave call</button>
+      <button id="leaveButton" class="hide">Leave call</button>
       <div class="calls">
         <div class="owner-container">
-          <div class="form-container">
+          <div class="form-container owner">
             <h2>Meeting owner form</h2>
             <form id="ownerForm">
-              <label for="name">Your name</label>
-              <input type="text" id="name" value="owner" required />
+              <label for="ownerName">Your name</label>
+              <input type="text" id="ownerName" value="owner" required />
               <br />
-              <label for="url">Daily room URL</label>
-              <input type="text" id="url" required />
+              <label for="ownerURL">Daily room URL</label>
+              <input type="text" id="ownerURL" required />
               <br />
               <label for="token">Owner token</label>
-              <input type="text" id="token" required />
+              <input type="password" id="token" required />
               <br />
               <input type="submit" value="Join call" />
             </form>
           </div>
-          <div class="video-container">
+          <div class="video-container hide">
             <h3>Owner video</h3>
             <p id="ownerLoading" class="hide">Loading...</p>
             <div id="ownerVideo"></div>
@@ -52,19 +52,19 @@
         </div>
 
         <div class="guest-container">
-          <div class="form-container">
+          <div class="form-container guest">
             <h2>Guest form</h2>
             <form id="knockingForm">
-              <label for="name">Your name</label>
-              <input type="text" id="name" value="guest" required />
+              <label for="guestName">Your name</label>
+              <input type="text" id="guestName" value="guest" required />
               <br />
-              <label for="url">Daily room URL</label>
-              <input type="text" id="url" />
+              <label for="guestURL">Daily room URL</label>
+              <input type="text" id="guestURL" />
               <br />
               <input type="submit" value="Knock to enter call" required />
             </form>
           </div>
-          <div class="video-container">
+          <div class="video-container hide">
             <h3>Guest video</h3>
             <p id="guestLoading" class="hide">Loading...</p>
             <div id="guestVideo"></div>
