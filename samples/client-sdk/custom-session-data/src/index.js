@@ -120,8 +120,7 @@ function setupJokeButton(callObject) {
   const btn = getJokeButton();
   btn.onclick = () => {
     getJoke().then((joke) => {
-      // Update the meeting session data with the
-      // new joke!
+      // Update the custom session data with the new joke!
       callObject.setMeetingSessionData({
         joke,
       });
