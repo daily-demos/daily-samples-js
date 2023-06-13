@@ -1,7 +1,7 @@
 {
-    "name": "daily-meeting-session-data",
+    "name": "daily-custom-session-data",
     "version": "1.0.0",
-    "description": "A small meeting session data sample",
+    "description": "A small custom session data sample",
     "scripts": {
         "dev": "http-server src/ -c-1 --cors='*'"
     },
