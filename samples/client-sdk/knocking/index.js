@@ -157,12 +157,23 @@ const checkAccessLevel = async () => {
   return state.access.level;
 };
 
-const handleJoinedMeeting = (e) => {
-  // Hide form that wasn't used
-  hideForms(e?.participants?.local.owner ? 'guest' : 'owner');
+const handleOwnerJoinedMeeting = (e) => {
+  logEvent(e);
+  const participant = e?.participants?.local;
+  if (participant.owner) {
+    console.log('This participant is a meeting owner! :)');
+  } else {
+    // this means they used a non-owner token in the owner form
+    console.error('This participant is not a meeting owner!');
+  }
+
+  // Update UI
+  hideLoadingText('owner');
+  hideForms('guest');
+  showOwnerPanel();
   showVideos();
   showLeaveButton();
-  const participant = e?.participants?.local;
+
   // This demo assumes videos are on when the call starts since there aren't media controls in the UI.
   if (!participant?.tracks?.video) {
     // Update the room's settings to enable cameras by default.
@@ -172,6 +183,7 @@ const handleJoinedMeeting = (e) => {
     );
     return;
   }
+  // Add video tile for owner's local video
   addParticipantVideo(participant);
 };
 
@@ -307,7 +319,7 @@ const denyAccess = () => {
 
 const addOwnerEvents = () => {
   callObject
-    .on('joined-meeting', handleJoinedMeeting)
+    .on('joined-meeting', handleOwnerJoinedMeeting)
     .on('left-meeting', handleLeftMeeting)
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
@@ -331,18 +343,7 @@ const createOwnerCall = async ({ name, url, token }) => {
 
   // Let owner join the meeting
   try {
-    const join = await callObject.join({ userName: name, url, token });
-
-    // Confirm the participant is an owner of the call (i.e. can respond to knocking)
-    if (join.local.owner !== true) {
-      console.error('This participant is not a meeting owner!');
-    } else {
-      console.log('This participant is a meeting owner! :)');
-    }
-
-    // Update UI after call is joined
-    hideLoadingText('owner');
-    showOwnerPanel();
+    await callObject.join({ userName: name, url, token });
   } catch (error) {
     console.log('Owner join failed: ', error);
     hideLoadingText('owner');
@@ -355,7 +356,7 @@ const submitOwnerForm = (e) => {
   // Do not try to create new call object if it already exists
   if (callObject) return;
   // Get form values
-  const target = e.target;
+  const { target } = e;
   const name = target.ownerName.value;
   const url = target.ownerURL.value;
   const token = target.token.value;
@@ -384,9 +385,22 @@ const handleRejection = (e) => {
   }
 };
 
+const handleGuestJoined = async (e) => {
+  logEvent(e);
+  // Update UI to show they're now in the waiting room
+  hideLoadingText('guest');
+  hideForms('owner');
+  showVideos();
+  showWaitingRoomText();
+  showLeaveButton();
+
+  // Request full access to the call (i.e. knock to enter)
+  await callObject.requestAccess({ name: e?.participants?.local?.user_name });
+};
+
 const addGuestEvents = () => {
   callObject
-    .on('joined-meeting', checkAccessLevel)
+    .on('joined-meeting', handleGuestJoined)
     .on('left-meeting', logEvent)
     .on('participant-joined', logEvent)
     .on('participant-updated', handleParticipantUpdate)
@@ -419,16 +433,6 @@ const createGuestCall = async ({ name, url }) => {
     if (permissions === 'lobby') {
       // Guests must call .join() before they can knock to enter the call
       await callObject.join();
-
-      // Update UI to show they're now in the waiting room
-      hideLoadingText('guest');
-      showWaitingRoomText();
-      hideForms('owner');
-      showLeaveButton();
-      showVideos();
-
-      // Request full access to the call (i.e. knock to enter)
-      await callObject.requestAccess({ name });
     } else if (permissions === 'full') {
       // If the guest can join the call, it's probably not a private room.
       console.error(
