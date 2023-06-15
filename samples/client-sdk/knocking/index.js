@@ -160,6 +160,8 @@ const checkAccessLevel = async () => {
 const handleOwnerJoinedMeeting = (e) => {
   logEvent(e);
   const participant = e?.participants?.local;
+  if (!participant) return;
+
   if (participant.owner) {
     console.log('This participant is a meeting owner! :)');
   } else {
@@ -385,7 +387,7 @@ const handleRejection = (e) => {
   }
 };
 
-const handleGuestJoined = async (e) => {
+const handleGuestJoined = (e) => {
   logEvent(e);
   // Update UI to show they're now in the waiting room
   hideLoadingText('guest');
@@ -395,7 +397,7 @@ const handleGuestJoined = async (e) => {
   showLeaveButton();
 
   // Request full access to the call (i.e. knock to enter)
-  await callObject.requestAccess({ name: e?.participants?.local?.user_name });
+  callObject.requestAccess({ name: e?.participants?.local?.user_name });
 };
 
 const addGuestEvents = () => {
