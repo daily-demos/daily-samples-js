@@ -122,7 +122,7 @@ const findVideoForParticipant = (sessionId) => {
   return null;
 };
 
-const addParticipantVideo = async (participant) => {
+const addParticipantVideo = (participant) => {
   if (!participant) return;
   // If the participant is an owner, we'll put them up top; otherwise, in the guest container
   const videoContainer = document.getElementById(
@@ -146,9 +146,9 @@ const addParticipantVideo = async (participant) => {
   }
 };
 
-const checkAccessLevel = async () => {
+const checkAccessLevel = () => {
   // https://docs.daily.co/reference/daily-js/instance-methods/access-state
-  const state = await callObject.accessState();
+  const state = callObject.accessState();
   /* Access level could be:
    - lobby (must knock to enter)
    - full (allowed to join the call)
@@ -196,8 +196,8 @@ const handleLeftMeeting = (e) => {
   hideLeaveButton();
 };
 
-const handleParticipantUpdate = async (e) => {
-  const level = await checkAccessLevel();
+const handleParticipantUpdate = (e) => {
+  const level = checkAccessLevel();
   console.log('current level: ', level);
   // Don't use this event for participants who are waiting to join
   if (level === 'lobby') return;
@@ -298,8 +298,8 @@ const allowAccess = () => {
   const waitList = Object.keys(waiting);
   // We'll let the whole list in to keep this functionality simple.
   // You could also add a button next to each name to let individual guests in and then have an "Accept all" and "Deny all" option to respond in one batch.
-  waitList.forEach(async (id) => {
-    await callObject.updateWaitingParticipant(id, {
+  waitList.forEach((id) => {
+    callObject.updateWaitingParticipant(id, {
       grantRequestedAccess: true,
     });
   });
@@ -312,8 +312,8 @@ const denyAccess = () => {
 
   const waitList = Object.keys(waiting);
   // We'll deny the whole list to keep the UI simple
-  waitList.forEach(async (id) => {
-    await callObject.updateWaitingParticipant(id, {
+  waitList.forEach((id) => {
+    callObject.updateWaitingParticipant(id, {
       grantRequestedAccess: false,
     });
   });
@@ -333,23 +333,21 @@ const addOwnerEvents = () => {
 };
 
 // The owner will go right into the call since they have appropriate permissions
-const createOwnerCall = async ({ name, url, token }) => {
+const createOwnerCall = ({ name, url, token }) => {
   showLoadingText('owner');
 
   // Create call object
-  callObject = await window.DailyIframe.createCallObject();
+  callObject = window.DailyIframe.createCallObject();
 
   // Add Daily event listeners (not an exhaustive list)
   // See: https://docs.daily.co/reference/daily-js/events
   addOwnerEvents();
 
   // Let owner join the meeting
-  try {
-    await callObject.join({ userName: name, url, token });
-  } catch (error) {
+  callObject.join({ userName: name, url, token }).catch((error) => {
     console.log('Owner join failed: ', error);
     hideLoadingText('owner');
-  }
+  });
 };
 
 // Handle onsubmit event for the owner form
@@ -417,7 +415,7 @@ const createGuestCall = async ({ name, url }) => {
   showLoadingText('guest');
 
   // Create call object
-  callObject = await window.DailyIframe.createCallObject();
+  callObject = window.DailyIframe.createCallObject();
 
   // Add Daily event listeners (not an exhaustive list)
   // See: https://docs.daily.co/reference/daily-js/events
@@ -428,7 +426,7 @@ const createGuestCall = async ({ name, url }) => {
     await callObject.preAuth({ userName: name, url });
 
     // Confirm that the guest actually needs to knock
-    const permissions = await checkAccessLevel();
+    const permissions = checkAccessLevel();
     console.log('access level: ', permissions);
 
     // If they're in the lobby, they need to knock
@@ -459,7 +457,7 @@ const submitKnockingForm = (e) => {
   if (callObject) return;
 
   // Get form values
-  const target = e.target;
+  const { target } = e;
   const name = target.guestName.value;
   const url = target.guestURL.value;
 
