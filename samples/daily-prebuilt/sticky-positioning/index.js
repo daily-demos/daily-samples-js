@@ -66,7 +66,7 @@ function handleScroll() {
    */
   const threshold = 80; // px
 
-  // Don't apply scroll logic when local participant isn't in the call or it just updated.
+  // Don't apply scroll logic when the local participant isn't in the call.
   if (notInCall) return;
   // Don't update the class list if it's already marked correctly for its placement.
   if ((scrolled && top === 0) || (!scrolled && top > 0)) return;
