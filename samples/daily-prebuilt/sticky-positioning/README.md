@@ -1,4 +1,4 @@
-# Daily Prebuilt: Sticky position demo
+# Daily Prebuilt: Sticky positioning demo
 
 This demo shows one way to keep your Daily Prebuilt video call on screen even while a user is scrolling through a page. It uses the `display: sticky;` property in the CSS styles to keep the video at the top regardless of where the user is on the page. It also resizes the video on scroll to allow for more text to be visible.
 
@@ -39,7 +39,7 @@ The room URL will be in the following format:
 Once you have a Daily room and have the demo open in your browser of choice, enter the Daily room URL into the form.
 ![Home screen before joining the call](./assets/home.png)
 
-Join the room and scroll to see how the video "sticks" to the top. This is due to the `display: sticky;` setting in the CSS styles.
+Join the room and scroll to see how the video "sticks" to the top. This is a result of the `display: sticky;` setting in the CSS styles.
 
 ![Home screen after joining the call and before scrolling](./assets/incall.png)
 

@@ -57,9 +57,14 @@ function throttle(func, timeFrame) {
 function handleScroll() {
   const callContainer = document.getElementById('dailyContainer');
   const notInCall = window.getComputedStyle(callContainer).display === 'none';
-  const { top } = callContainer.getBoundingClientRect();
+  const { top } = callContainer.getBoundingClientRect(); // 0 (px) when scrolled and at the top of the screen.
   const scrolled = callContainer.classList.contains('scrolled');
-  const threshold = 80;
+  /*
+   The width+height change that occurs when the scrolled class is applied 
+   will affect the value of "top". The threshold provides some wiggle room 
+   to avoid toggling the class on/off if scrolling slowly.
+   */
+  const threshold = 80; // px
 
   // Don't apply scroll logic when local participant isn't in the call or it just updated.
   if (notInCall) return;
