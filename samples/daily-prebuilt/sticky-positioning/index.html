@@ -14,8 +14,10 @@
 
       <h2>Enter a Daily room URL to join a Daily call</h2>
       <form id="joinForm">
-        <label for="url">Room URL</label>
-        <input id="url" type="text" />
+        <label for="url"
+          >Room URL (e.g. https://domain.daily.co/room-name)</label
+        >
+        <input id="url" type="url" pattern="https://.*" required />
         <input type="submit" value="Join room" />
       </form>
       <div id="dailyContainer"></div>
