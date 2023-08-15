@@ -1,0 +1,29 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #eff3f5;
+}
+
+main {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+#dailyContainer {
+  aspect-ratio: 16/12;
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: none;
+  width: 100%;
+  transition-property: width;
+  transition-duration: 0.5s;
+}
+
+#dailyContainer.scrolled {
+  width: 60%;
+}
+
+form input,
+form label {
+  display: block;
+}
