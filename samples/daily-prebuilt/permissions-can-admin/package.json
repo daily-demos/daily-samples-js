@@ -5,6 +5,15 @@
   "scripts": {
     "dev": "next dev"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daily-demos/daily-samples-js.git"
+  },
+  "author": "Jess Mitchell",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/daily-demos/daily-samples-js/issues"
+  },
   "dependencies": {
     "@daily-co/daily-js": "^0.48.0",
     "next": "13.4.16",
