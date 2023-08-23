@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import DailyIframe from "@daily-co/daily-js";
-import JoinForm from "../JoinForm/JoinForm";
-import AdminPanel from "../AdminPanel/AdminPanel";
-import { api } from "../../daily";
-import "./daily-container.css";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import DailyIframe from '@daily-co/daily-js';
+import JoinForm from '../JoinForm/JoinForm';
+import AdminPanel from '../AdminPanel/AdminPanel';
+import { api } from '../../daily';
+import './daily-container.css';
 
 export default function DailyContainer() {
   const searchParams = useSearchParams();
@@ -22,7 +22,7 @@ export default function DailyContainer() {
   }, [participants]);
 
   useEffect(() => {
-    const urlParam = searchParams.get("url");
+    const urlParam = searchParams.get('url');
     if (urlParam) {
       setUrl(urlParam);
     }
@@ -95,22 +95,22 @@ export default function DailyContainer() {
   const addDailyEvents = (callFrame) => {
     // https://docs.daily.co/reference/daily-js/events
     callFrame
-      .on("joined-meeting", handleJoinedMeeting)
-      .on("participant-joined", handleParticipantJoined)
-      .on("participant-updated", handleParticipantUpdate)
-      .on("participant-left", handleParticipantLeft)
-      .on("left-meeting", handleLeftMeeting)
-      .on("error", handleError);
+      .on('joined-meeting', handleJoinedMeeting)
+      .on('participant-joined', handleParticipantJoined)
+      .on('participant-updated', handleParticipantUpdate)
+      .on('participant-left', handleParticipantLeft)
+      .on('left-meeting', handleLeftMeeting)
+      .on('error', handleError);
   };
 
   const removeDailyEvents = (callFrame) => {
     callFrame
-      .off("joined-meeting", handleJoinedMeeting)
-      .off("participant-joined", handleParticipantJoined)
-      .off("participant-updated", handleParticipantUpdate)
-      .off("participant-left", handleParticipantLeft)
-      .off("left-meeting", handleLeftMeeting)
-      .off("error", handleError);
+      .off('joined-meeting', handleJoinedMeeting)
+      .off('participant-joined', handleParticipantJoined)
+      .off('participant-updated', handleParticipantUpdate)
+      .off('participant-left', handleParticipantLeft)
+      .off('left-meeting', handleLeftMeeting)
+      .off('error', handleError);
   };
 
   const joinRoom = async ({ name, url, token, isOwner }) => {
@@ -119,8 +119,8 @@ export default function DailyContainer() {
     // https://docs.daily.co/reference/daily-js/factory-methods/create-frame
     const dailyCallFrame = DailyIframe.createFrame(callContainerDiv, {
       iframeStyle: {
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
       },
     });
 
@@ -150,7 +150,7 @@ export default function DailyContainer() {
     if (token) {
       return token;
     } else {
-      console.error("Token creation failed.");
+      console.error('Token creation failed.');
       return null;
     }
   };
@@ -158,7 +158,7 @@ export default function DailyContainer() {
   const createNewRoom = async () => {
     const newRoom = await api.createRoom();
     if (!newRoom.url) {
-      console.error("Room could not be created. Please try again.");
+      console.error('Room could not be created. Please try again.');
       return null;
     }
     return newRoom;
@@ -175,7 +175,7 @@ export default function DailyContainer() {
     const existingRoomUrl = target?.url?.value;
     if (target?.url?.value) {
       options.url = existingRoomUrl;
-      options.roomName = existingRoomUrl.split(".co/")[1];
+      options.roomName = existingRoomUrl.split('.co/')[1];
       options.isOwner = false;
     } else {
       // Create a new Daily room when the form is submitted
@@ -223,6 +223,7 @@ export default function DailyContainer() {
     // https://docs.daily.co/reference/daily-js/instance-methods/leave
     callFrame.leave();
     removeDailyEvents(callFrame);
+    // https://docs.daily.co/reference/daily-js/instance-methods/destroy
     callFrame.destroy();
   }, [callFrame, removeDailyEvents]);
 
@@ -232,9 +233,9 @@ export default function DailyContainer() {
   );
 
   return (
-    <div className="daily-container">
+    <div className='daily-container'>
       {error && (
-        <p className="error-msg">
+        <p className='error-msg'>
           Error message: {error}. Refresh to start over.
         </p>
       )}
@@ -248,14 +249,14 @@ export default function DailyContainer() {
       {callFrame && (
         <>
           <p>
-            <span>Share this link to let others join:</span>{" "}
-            <a href={localLink()} target="_blank" rel="noopener noreferrer">
+            <span>Share this link to let others join:</span>{' '}
+            <a href={localLink()} target='_blank' rel='noopener noreferrer'>
               {localLink()}
             </a>
           </p>
           <p>
-            External Daily room URL:{" "}
-            <a href={url} target="_blank" rel="noopener noreferrer">
+            External Daily room URL:{' '}
+            <a href={url} target='_blank' rel='noopener noreferrer'>
               {url}
             </a>
           </p>
@@ -270,14 +271,14 @@ export default function DailyContainer() {
             makeAdmin={makeAdmin}
             removeFromCall={removeFromCall}
           />
-          <div className="call-header">
-            <button className="red-button" onClick={leaveCall}>
+          <div className='call-header'>
+            <button className='red-button' onClick={leaveCall}>
               Leave this call
             </button>
           </div>
         </>
       )}
-      <div className="call" ref={containerRef}></div>
+      <div className='call' ref={containerRef}></div>
     </div>
   );
 }
