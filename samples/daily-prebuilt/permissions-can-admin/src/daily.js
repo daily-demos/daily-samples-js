@@ -1,6 +1,6 @@
 const createRoom = async () => {
-  const roomRes = await fetch("/api/rooms", {
-    method: "POST",
+  const roomRes = await fetch('/api/rooms', {
+    method: 'POST',
     body: JSON.stringify({
       properties: {
         enable_prejoin_ui: false,
@@ -17,8 +17,8 @@ const createRoom = async () => {
 
 const createToken = async ({ isOwner, roomName }) => {
   const expiry = Math.round(Date.now() / 1000) + 60 * 60;
-  const tokenRes = await fetch("/api/tokens", {
-    method: "POST",
+  const tokenRes = await fetch('/api/tokens', {
+    method: 'POST',
     body: JSON.stringify({
       properties: { room_name: roomName, exp: expiry, is_owner: isOwner },
     }),

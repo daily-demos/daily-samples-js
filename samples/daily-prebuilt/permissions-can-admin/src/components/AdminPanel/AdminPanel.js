@@ -1,4 +1,4 @@
-import "./admin-panel.css";
+import './admin-panel.css';
 
 const ParticipantListItem = ({
   p,
@@ -11,14 +11,14 @@ const ParticipantListItem = ({
     <span>
       {`${count}. `}
       <b>
-        {p.permissions.canAdmin && "Admin | "}
-        {p.local && "(You) "}
+        {p.permissions.canAdmin && 'Admin | '}
+        {p.local && '(You) '}
       </b>
       {p.user_name}: {p.session_id}
-    </span>{" "}
+    </span>{' '}
     {!p.local && !p.permissions.canAdmin && isOwner && (
-      <span className="buttons">
-        <button className="red-button-secondary" onClick={removeFromCall}>
+      <span className='buttons'>
+        <button className='red-button-secondary' onClick={removeFromCall}>
           Remove from call
         </button>
         <button onClick={makeAdmin}>Make admin</button>
@@ -34,7 +34,7 @@ export default function AdminPanel({
   isOwner,
 }) {
   return (
-    <div className="admin-panel">
+    <div className='admin-panel'>
       <h3>Participant list</h3>
       {isOwner ? (
         <p>

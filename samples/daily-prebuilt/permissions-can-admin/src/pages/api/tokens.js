@@ -1,17 +1,17 @@
 export default async function handler(req, res) {
   try {
     switch (req.method) {
-      case "POST":
+      case 'POST':
         const options = JSON.parse(req.body);
         // Make request to Daily's REST API /meeting-tokens endpoint
         // https://docs.daily.co/reference/rest-api/meeting-tokens/create-meeting-token
         const dailyTokenRes = await fetch(
-          "https://api.daily.co/v1/meeting-tokens",
+          'https://api.daily.co/v1/meeting-tokens',
           {
-            method: "POST",
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + process.env.DAILY_API_KEY,
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + process.env.DAILY_API_KEY,
             },
             body: JSON.stringify(options),
           }
