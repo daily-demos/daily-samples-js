@@ -20,7 +20,8 @@ export default function Header() {
         <a
           href='https://github.com/daily-demos/daily-samples-js'
           target='_blank'
-          rel='noopener noreferrer'>
+          rel='noopener noreferrer'
+        >
           <Image
             src='/github.svg'
             alt='Github project'

@@ -1,4 +1,5 @@
 'use client';
+
 import Header from '@/components/Header/Header';
 import './page.css';
 import DailyContainer from '@/components/DailyContainer/DailyContainer';

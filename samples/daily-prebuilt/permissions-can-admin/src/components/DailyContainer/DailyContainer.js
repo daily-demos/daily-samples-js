@@ -79,7 +79,7 @@ export default function DailyContainer() {
     (e) => {
       console.log(e.action);
 
-      //Reset state
+      // Reset state
       setCallFrame(null);
       setIsAdmin(false);
       setSubmitting(false);
@@ -150,10 +150,9 @@ export default function DailyContainer() {
     const { token } = await api.createToken(options);
     if (token) {
       return token;
-    } else {
-      console.error('Token creation failed.');
-      return null;
     }
+    console.error('Token creation failed.');
+    return null;
   };
 
   const createNewRoom = async () => {
@@ -170,7 +169,7 @@ export default function DailyContainer() {
     // Clear previous error
     setError(null);
     const { target } = e;
-    let options = { name: target.name.value };
+    const options = { name: target.name.value };
 
     // Use the existing room supplied in the query param if it's provided (or create a new room)
     const existingRoomUrl = target?.url?.value;

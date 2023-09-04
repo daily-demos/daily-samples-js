@@ -11,21 +11,11 @@ const ParticipantListItem = ({
   <li>
     <span>
       {`${count}. `}
-        {p.permissions.canAdmin && (
-          <b>
-            {(p.owner) ? (
-              'Owner | '
-            ) : (
-              'Admin | '
-            )}
-          </b>
-        )}
-        <b>
-          {p.local && '(You) '}
-        </b>
+      {p.permissions.canAdmin && <b>{p.owner ? 'Owner | ' : 'Admin | '}</b>}
+      <b>{p.local && '(You) '}</b>
       {p.user_name}: {p.session_id}
     </span>{' '}
-    {(!p.local && !p.owner) && (localIsAdmin || localIsOwner) && (
+    {!p.local && !p.owner && (localIsAdmin || localIsOwner) && (
       <span className='buttons'>
         {(!p.permissions.canAdmin || localIsOwner) && (
           <button className='red-button-secondary' onClick={removeFromCall}>
@@ -52,16 +42,18 @@ export default function AdminPanel({
       <h3>Participant list</h3>
       {localIsOwner && (
         <p>
-          You are a meeting owner and can remove <b>non-owners</b> 
+          You are a meeting owner and can remove <b>non-owners</b>
           or make them admins.
         </p>
       )}
-      
+
       {localIsAdmin && (
-        <p>You have meeting admin privileges to remove <b>non-admins</b> 
-        or make them admins.</p>
-      )} 
-      
+        <p>
+          You have meeting admin privileges to remove <b>non-admins</b>
+          or make them admins.
+        </p>
+      )}
+
       {!localIsOwner && !localIsAdmin && (
         <p>
           You are a call attendee. If a meeting owner or admin gives you admin
