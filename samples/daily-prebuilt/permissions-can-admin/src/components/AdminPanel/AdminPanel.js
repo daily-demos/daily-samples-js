@@ -4,24 +4,37 @@ const ParticipantListItem = ({
   p,
   makeAdmin,
   removeFromCall,
-  isOwner,
+  localIsOwner,
+  localIsAdmin,
   count,
 }) => (
   <li>
     <span>
       {`${count}. `}
-      <b>
-        {p.permissions.canAdmin && 'Admin | '}
-        {p.local && '(You) '}
-      </b>
+        {p.permissions.canAdmin && (
+          <b>
+            {(p.owner) ? (
+              'Owner | '
+            ) : (
+              'Admin | '
+            )}
+          </b>
+        )}
+        <b>
+          {p.local && '(You) '}
+        </b>
       {p.user_name}: {p.session_id}
     </span>{' '}
-    {!p.local && !p.permissions.canAdmin && isOwner && (
+    {(!p.local && !p.owner) && (localIsAdmin || localIsOwner) && (
       <span className='buttons'>
-        <button className='red-button-secondary' onClick={removeFromCall}>
-          Remove from call
-        </button>
-        <button onClick={makeAdmin}>Make admin</button>
+        {(!p.permissions.canAdmin || localIsOwner) && (
+          <button className='red-button-secondary' onClick={removeFromCall}>
+            Remove from call
+          </button>
+        )}
+        {!p.permissions.canAdmin && (
+          <button onClick={makeAdmin}>Make admin</button>
+        )}
       </span>
     )}
   </li>
@@ -31,19 +44,27 @@ export default function AdminPanel({
   participants,
   makeAdmin,
   removeFromCall,
-  isOwner,
+  localIsOwner,
+  localIsAdmin,
 }) {
   return (
     <div className='admin-panel'>
       <h3>Participant list</h3>
-      {isOwner ? (
+      {localIsOwner && (
         <p>
-          You are a meeting owner and can remove <b>non-admins</b> or make them
-          admins
+          You are a meeting owner and can remove <b>non-owners</b> 
+          or make them admins.
         </p>
-      ) : (
+      )}
+      
+      {localIsAdmin && (
+        <p>You have meeting admin privileges to remove <b>non-admins</b> 
+        or make them admins.</p>
+      )} 
+      
+      {!localIsOwner && !localIsAdmin && (
         <p>
-          You are a call attendee. If a meeting owner gives you admin
+          You are a call attendee. If a meeting owner or admin gives you admin
           privileges, additional actions will become available.
         </p>
       )}
@@ -57,7 +78,8 @@ export default function AdminPanel({
               count={i + 1} // for numbered list
               key={p.session_id}
               p={p}
-              isOwner={isOwner}
+              localIsOwner={localIsOwner}
+              localIsAdmin={localIsAdmin}
               makeAdmin={handleMakeAdmin}
               removeFromCall={handleRemoveFromCall}
             />

@@ -11,6 +11,7 @@ export default function DailyContainer() {
   const containerRef = useRef(null);
   const [callFrame, setCallFrame] = useState(null);
   const [url, setUrl] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -60,7 +61,7 @@ export default function DailyContainer() {
         [e.participant.session_id]: e.participant,
       }));
       if (e.participant.local) {
-        setIsOwner(e.participant.permissions.canAdmin);
+        setIsAdmin(e.participant.permissions.canAdmin);
       }
     }
   };
@@ -80,7 +81,7 @@ export default function DailyContainer() {
 
       //Reset state
       setCallFrame(null);
-      setIsOwner(false);
+      setIsAdmin(false);
       setSubmitting(false);
       setParticipants({});
     },
@@ -267,7 +268,8 @@ export default function DailyContainer() {
         <>
           <AdminPanel
             participants={participants}
-            isOwner={isOwner}
+            localIsOwner={isOwner}
+            localIsAdmin={isAdmin}
             makeAdmin={makeAdmin}
             removeFromCall={removeFromCall}
           />
