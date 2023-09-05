@@ -26,7 +26,7 @@ To add the required environment variables, start by copying the example `.env` f
 cp .env.example .env
 ```
 
-In `.env`, add your Daily API key available in the [Daily dashboard](https://dashboard.daily.co/developers) and your Daily domain. (Your Daily domain is the domain in all your Daily room links. E.g., `https://your-domain.daily.co/room-name`.)
+In `.env`, add your Daily API key (available in the [Daily dashboard](https://dashboard.daily.co/developers)) and your Daily domain. (Your Daily domain is the domain in all your Daily room links. E.g., `https://your-domain.daily.co/room-name`.)
 
 ```
 DAILY_API_KEY=<your-daily-api-key>
