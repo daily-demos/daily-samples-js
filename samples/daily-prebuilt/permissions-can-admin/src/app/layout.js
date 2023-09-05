@@ -2,7 +2,7 @@ import './globals.css';
 
 export const metadata = {
   title: 'Daily Permissions Demo',
-  description: 'Using the canAdmin option to share admin privileges.',
+  description: 'Using the canAdmin property to share admin privileges.',
 };
 
 export default function RootLayout({ children }) {
