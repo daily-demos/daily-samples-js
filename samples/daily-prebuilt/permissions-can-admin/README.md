@@ -3,7 +3,7 @@
 This demo app shows how to use the `canAdmin` property to allow a meeting owner or admin to make another participant an admin (i.e., to share their admin privileges).
 ![Admin view in-call](./public/admin.png)
 
-[`canAdmin`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant#permissions) is an option that can be passed when calling `daily-js`'s [`updateParticipant()`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant) instance method.
+[`canAdmin`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant#permissions) is a property that can be passed when calling the Daily call object's [`updateParticipant()`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant) instance method.
 
 With this demo app, owners and admins can click a button next to non-admins' names to make them an admin. Admins can also test their admin privileges by ejecting non-admin participants from the call via a button. Owners can eject non-admins and admins.
 
