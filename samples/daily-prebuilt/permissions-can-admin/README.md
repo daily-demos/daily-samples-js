@@ -1,6 +1,6 @@
 # Daily permissions demo: `canAdmin` (Daily Prebuilt)
 
-This demo app shows how to use the `canAdmin` option to allow an admin to make another participant an admin (i.e., to share their admin privileges).
+This demo app shows how to use the `canAdmin` property to allow a meeting owner or admin to make another participant an admin (i.e., to share their admin privileges).
 ![Admin view in-call](./public/admin.png)
 
 [`canAdmin`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant#permissions) is an option that can be passed when calling `daily-js`'s [`updateParticipant()`](https://docs.daily.co/reference/daily-js/instance-methods/update-participant) instance method.
