@@ -49,7 +49,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 To use this demo app, start by entering your name in the join form.
 ![Homepage](./public/homepage.png)
 
-When you join, a new Daily room and owner meeting token will be created automatically for you. (To see the [Daily REST API](https://docs.daily.co/reference/rest-api) usage in the app, see the files under `/src/pages/api`.)
+When you join, a new Daily room and owner meeting token will be created automatically for you using [Daily's REST API](https://docs.daily.co/reference/rest-api). (To see this implementation, refer to the files under `/src/pages/api`.)
 
 To let non-admin participants join the call, share the link provided in the app UI.
 
