@@ -3,7 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import DailyIframe from '@daily-co/daily-js';
 import JoinForm from '../JoinForm/JoinForm';
 import AdminPanel from '../AdminPanel/AdminPanel';
-import { api } from '../../daily';
+import api from '../../daily';
 import './daily-container.css';
 
 export default function DailyContainer() {
@@ -31,16 +31,16 @@ export default function DailyContainer() {
 
   const handleJoinedMeeting = (e) => {
     console.log(e.action);
-    setParticipants((participants) => ({
-      ...participants,
+    setParticipants((p) => ({
+      ...p,
       [e.participants.local.session_id]: e.participants.local,
     }));
   };
 
   const handleParticipantJoined = (e) => {
     console.log(e.action);
-    setParticipants((participants) => ({
-      ...participants,
+    setParticipants((p) => ({
+      ...p,
       [e.participant.session_id]: e.participant,
     }));
   };
@@ -56,8 +56,8 @@ export default function DailyContainer() {
       prevParticipants.current[e.participant.session_id].permissions
         .canAdmin !== e.participant.permissions.canAdmin
     ) {
-      setParticipants((participants) => ({
-        ...participants,
+      setParticipants((p) => ({
+        ...p,
         [e.participant.session_id]: e.participant,
       }));
       if (e.participant.local) {
@@ -68,8 +68,8 @@ export default function DailyContainer() {
 
   const handleParticipantLeft = (e) => {
     console.log(e.action);
-    setParticipants((participants) => {
-      const currentParticipants = { ...participants };
+    setParticipants((p) => {
+      const currentParticipants = { ...p };
       delete currentParticipants[e.participant.session_id];
       return currentParticipants;
     });
@@ -93,9 +93,9 @@ export default function DailyContainer() {
     setError(e.errorMsg);
   };
 
-  const addDailyEvents = (callFrame) => {
+  const addDailyEvents = (dailyCallFrame) => {
     // https://docs.daily.co/reference/daily-js/events
-    callFrame
+    dailyCallFrame
       .on('joined-meeting', handleJoinedMeeting)
       .on('participant-joined', handleParticipantJoined)
       .on('participant-updated', handleParticipantUpdate)
@@ -104,8 +104,8 @@ export default function DailyContainer() {
       .on('error', handleError);
   };
 
-  const removeDailyEvents = (callFrame) => {
-    callFrame
+  const removeDailyEvents = (dailyCallFrame) => {
+    dailyCallFrame
       .off('joined-meeting', handleJoinedMeeting)
       .off('participant-joined', handleParticipantJoined)
       .off('participant-updated', handleParticipantUpdate)
@@ -114,8 +114,7 @@ export default function DailyContainer() {
       .off('error', handleError);
   };
 
-  const joinRoom = async ({ name, url, token, isOwner }) => {
-    name, url, token;
+  const joinRoom = async ({ name, roomURL, token, localIsOwner }) => {
     const callContainerDiv = containerRef.current;
     // https://docs.daily.co/reference/daily-js/factory-methods/create-frame
     const dailyCallFrame = DailyIframe.createFrame(callContainerDiv, {
@@ -127,9 +126,9 @@ export default function DailyContainer() {
 
     addDailyEvents(dailyCallFrame);
 
-    const options = { userName: name, url };
+    const options = { userName: name, url: roomURL };
     if (token) {
-      setIsOwner(isOwner);
+      setIsOwner(localIsOwner);
       options.token = token;
     }
 
@@ -138,7 +137,7 @@ export default function DailyContainer() {
       // https://docs.daily.co/reference/daily-js/instance-methods/join
       await dailyCallFrame.join(options);
       setCallFrame(dailyCallFrame);
-      setUrl(url);
+      setUrl(roomURL);
       setSubmitting(false);
     } catch (e) {
       console.error(e);
@@ -173,17 +172,18 @@ export default function DailyContainer() {
 
     // Use the existing room supplied in the query param if it's provided (or create a new room)
     const existingRoomUrl = target?.url?.value;
-    if (target?.url?.value) {
-      options.url = existingRoomUrl;
-      options.roomName = existingRoomUrl.split('.co/')[1];
-      options.isOwner = false;
+    if (existingRoomUrl) {
+      options.roomURL = existingRoomUrl;
+      const [, roomName] = existingRoomUrl.split('.co/');
+      options.roomName = roomName;
+      options.localIsOwner = false;
     } else {
       // Create a new Daily room when the form is submitted
       const newRoom = await createNewRoom();
       if (!newRoom) return; // error is thrown in createNewRoom
-      options.url = newRoom.url;
+      options.roomURL = newRoom.url;
       options.roomName = newRoom.name;
-      options.isOwner = true;
+      options.localIsOwner = true;
 
       // Create an owner meeting token
       const newToken = await createToken({
