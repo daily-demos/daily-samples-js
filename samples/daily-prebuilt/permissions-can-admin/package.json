@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev"
+    "dev": "next dev",
+    "lint": "next lint",
+    "lintFix": "next lint -- --fix"
   },
   "repository": {
     "type": "git",
