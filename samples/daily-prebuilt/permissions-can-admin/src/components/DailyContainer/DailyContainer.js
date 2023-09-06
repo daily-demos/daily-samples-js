@@ -75,9 +75,24 @@ export default function DailyContainer() {
     });
   };
 
+  const handleError = (e) => {
+    console.log(e.action);
+    setError(e.errorMsg);
+  };
+
   const handleLeftMeeting = useCallback(
     (e) => {
       console.log(e.action);
+
+      if (callFrame) {
+        // https://docs.daily.co/reference/daily-js/instance-methods/off
+        callFrame
+          .off('joined-meeting', handleJoinedMeeting)
+          .off('participant-joined', handleParticipantJoined)
+          .off('participant-updated', handleParticipantUpdate)
+          .off('participant-left', handleParticipantLeft)
+          .off('error', handleError);
+      }
 
       // Reset state
       setCallFrame(null);
@@ -88,13 +103,8 @@ export default function DailyContainer() {
     [callFrame]
   );
 
-  const handleError = (e) => {
-    console.log(e.action);
-    setError(e.errorMsg);
-  };
-
   const addDailyEvents = (dailyCallFrame) => {
-    // https://docs.daily.co/reference/daily-js/events
+    // https://docs.daily.co/reference/daily-js/instance-methods/on
     dailyCallFrame
       .on('joined-meeting', handleJoinedMeeting)
       .on('participant-joined', handleParticipantJoined)
@@ -102,16 +112,6 @@ export default function DailyContainer() {
       .on('participant-left', handleParticipantLeft)
       .on('left-meeting', handleLeftMeeting)
       .on('error', handleError);
-  };
-
-  const removeDailyEvents = (dailyCallFrame) => {
-    dailyCallFrame
-      .off('joined-meeting', handleJoinedMeeting)
-      .off('participant-joined', handleParticipantJoined)
-      .off('participant-updated', handleParticipantUpdate)
-      .off('participant-left', handleParticipantLeft)
-      .off('left-meeting', handleLeftMeeting)
-      .off('error', handleError);
   };
 
   const joinRoom = async ({ name, roomURL, token, localIsOwner }) => {
@@ -222,10 +222,9 @@ export default function DailyContainer() {
   const leaveCall = useCallback(() => {
     // https://docs.daily.co/reference/daily-js/instance-methods/leave
     callFrame.leave();
-    removeDailyEvents(callFrame);
     // https://docs.daily.co/reference/daily-js/instance-methods/destroy
     callFrame.destroy();
-  }, [callFrame, removeDailyEvents]);
+  }, [callFrame]);
 
   const localLink = useCallback(
     () => `http://localhost:3000/?url=${url}`,
