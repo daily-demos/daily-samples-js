@@ -1,5 +1,9 @@
-import { hideTestResults, removeAllParticipantEles } from "./dom.js";
+import { hideTestResults, removeAllParticipantEles } from './dom.js';
 
+/**
+ * Configures the test button onclick handler
+ * @param {()} handler
+ */
 export function setupTestBtn(handler) {
   const testBtn = getTestBtn();
   testBtn.onclick = (ev) => {
@@ -8,16 +12,26 @@ export function setupTestBtn(handler) {
   };
 }
 
+/**
+ * Enables the test button
+ */
 export function enableTestBtn() {
   const testBtn = getTestBtn();
   testBtn.disabled = false;
 }
 
+/**
+ * Disables the test button
+ */
 export function disableTestBtn() {
   const testBtn = getTestBtn();
   testBtn.disabled = true;
 }
 
+/**
+ * Configures the leave button onclick handler
+ * @param {()} handler
+ */
 export function setupLeaveBtn(handler) {
   const btn = getLeaveBtn();
   btn.onclick = (ev) => {
@@ -29,6 +43,9 @@ export function setupLeaveBtn(handler) {
   };
 }
 
+/**
+ * Enables the call controls
+ */
 export function enableControls() {
   const incallEle = document.getElementById('incall');
   const allButtons = incallEle.getElementsByTagName('button');
@@ -38,6 +55,9 @@ export function enableControls() {
   }
 }
 
+/**
+ * Disables the call controls
+ */
 export function disableControls() {
   const incallEle = document.getElementById('incall');
   const allButtons = incallEle.getElementsByTagName('button');

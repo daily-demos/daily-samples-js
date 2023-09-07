@@ -16,7 +16,7 @@ import {
 } from './call/dom.js';
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Set up the two main controls we have: running the tests and leaving
+  // Set up the primary test button and provide the handler to run when it is clicked.
   setupTestBtn(() => {
     const callObject = setupCallObject();
     setupLeaveBtn(() => {
@@ -69,8 +69,8 @@ function setupCallObject() {
 
 /**
  * Runs Daily's connection test methods and presents the results.
- * @param {*} callObject 
- * @returns 
+ * @param {DailyCall} callObject
+ * @returns
  */
 function runTests(callObject) {
   disableTestBtn();
@@ -99,8 +99,8 @@ function runTests(callObject) {
 
 /**
  * Runs all of Daily's connection tests
- * @param {DailyCall} callObject 
- * @param {MediaStreamTrack} videoTrack 
+ * @param {DailyCall} callObject
+ * @param {MediaStreamTrack} videoTrack
  */
 function doAllTests(callObject, videoTrack) {
   Promise.all([
@@ -114,9 +114,9 @@ function doAllTests(callObject, videoTrack) {
 
 /**
  * Runs Daily's connection quality test and updates DOM with the result.
- * @param {DailyCall} callObject 
- * @param {MediaStreamTrack} videoTrack 
- * @returns 
+ * @param {DailyCall} callObject
+ * @param {MediaStreamTrack} videoTrack
+ * @returns
  */
 function testConnectionQuality(callObject, videoTrack) {
   return callObject
@@ -157,9 +157,9 @@ function testConnectionQuality(callObject, videoTrack) {
 
 /**
  * Runs Daily's network connectivity test and updates DOM with the result.
- * @param {DailyCall} callObject 
- * @param {MediaStreamTrack} videoTrack 
- * @returns 
+ * @param {DailyCall} callObject
+ * @param {MediaStreamTrack} videoTrack
+ * @returns
  */
 function testNetworkConnectivity(callObject, videoTrack) {
   console.log('testing network connectivity');
@@ -191,8 +191,8 @@ function testNetworkConnectivity(callObject, videoTrack) {
 
 /**
  * Runs Daily's WebSocket connectivity test and updates DOM with the result.
- * @param {DailyCall} callObject 
- * @returns 
+ * @param {DailyCall} callObject
+ * @returns
  */
 function testWebSocketConnectivity(callObject) {
   console.log('testing WebSocket connectivity');
@@ -227,7 +227,7 @@ function testWebSocketConnectivity(callObject) {
 
 /**
  * Turns off camera, aborts and running tests, and takes user back to starting state.
- * @param {DailyCall} callObject 
+ * @param {DailyCall} callObject
  */
 function leave(callObject) {
   callObject.setLocalVideo(false);

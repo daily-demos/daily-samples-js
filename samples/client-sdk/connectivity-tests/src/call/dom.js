@@ -2,9 +2,9 @@ const hiddenClassName = 'hidden';
 
 /**
  * Updates the given participant's DOM element with the provided media track.
- * @param {*} sessionID 
- * @param {*} newTrack 
- * @returns 
+ * @param {string} sessionID
+ * @param {MediaStreamTrack} newTrack
+ * @returns
  */
 export function updateMediaTrack(sessionID, newTrack) {
   const participantEle = getParticipantEle(sessionID);
@@ -43,6 +43,9 @@ export function hideTestResults() {
   getTestsEle().classList.add(hiddenClassName);
 }
 
+/**
+ * Rests all test results in the DOM.
+ */
 export function resetTestResults() {
   const connectionTestEle = getConnectionTestEle();
   connectionTestEle.innerText = '';
@@ -59,9 +62,9 @@ export function resetTestResults() {
 
 /**
  * Adds a DOM element for the given participant
- * @param {DailyParticipant} participant 
- * @param {HTMLElement} parentEle 
- * @returns 
+ * @param {DailyParticipant} participant
+ * @param {HTMLElement} parentEle
+ * @returns
  */
 export function addParticipantEle(participant, parentEle) {
   const sessionID = participant.session_id;
@@ -118,10 +121,10 @@ function tryUpdateAudio(newTrack, parentEle) {
 
 /**
  * Updates a media stream track if the track has changed.
- * @param {MediaStreamTrack} newTrack 
- * @param {HTMLElement} parentEle 
- * @param {'video' | 'audio'} trackKind 
- * @returns 
+ * @param {MediaStreamTrack} newTrack
+ * @param {HTMLElement} parentEle
+ * @param {'video' | 'audio'} trackKind
+ * @returns
  */
 function maybeUpdateTrack(newTrack, parentEle, trackKind) {
   const mediaEles = parentEle.getElementsByTagName(trackKind);
@@ -144,7 +147,7 @@ function maybeUpdateTrack(newTrack, parentEle, trackKind) {
 
 /**
  * Removes any media on the given parent element.
- * @param {HTMLElement} parentEle 
+ * @param {HTMLElement} parentEle
  */
 function removeMedia(parentEle) {
   const videoTag = parentEle.getElementsByTagName('video')[0];
@@ -156,11 +159,9 @@ function removeMedia(parentEle) {
   }
 }
 
-
 function getParticipantEleID(sessionID) {
   return `participant-${sessionID}`;
 }
-
 
 function getTestsEle() {
   return document.getElementById('tests');
@@ -173,6 +174,7 @@ function getConnectionTestEle() {
 function getConnectivtityTestEle() {
   return document.getElementById('connectivity-test-results');
 }
+
 function getWebsocketTestEle() {
   return document.getElementById('websocket-test-results');
 }
