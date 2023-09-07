@@ -1,8 +1,8 @@
 'use client';
 
-import Header from '@/components/Header/Header';
+import Header from '../components/Header/Header';
 import './page.css';
-import DailyContainer from '@/components/DailyContainer/DailyContainer';
+import DailyContainer from '../components/DailyContainer/DailyContainer';
 
 export default function Home() {
   return (

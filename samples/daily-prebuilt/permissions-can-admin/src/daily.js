@@ -31,7 +31,9 @@ const createToken = async ({ isOwner, roomName }) => {
   return tokenData.token;
 };
 
-export const api = {
+const api = {
   createToken,
   createRoom,
 };
+
+export default api;
