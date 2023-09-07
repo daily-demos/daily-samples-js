@@ -16,13 +16,13 @@ import {
 } from './call/dom.js';
 
 window.addEventListener('DOMContentLoaded', () => {
-  const callObject = setupCallObject();
   // Set up the two main controls we have: running the tests and leaving
   setupTestBtn(() => {
+    const callObject = setupCallObject();
+    setupLeaveBtn(() => {
+      leave(callObject);
+    });
     runTests(callObject);
-  });
-  setupLeaveBtn(() => {
-    leave(callObject);
   });
 });
 
@@ -32,7 +32,12 @@ window.addEventListener('DOMContentLoaded', () => {
  * @returns {DailyCall}
  */
 function setupCallObject() {
-  const callObject = window.DailyIframe.createCallObject();
+  // If call instance already exists, return it.
+  let callObject = window.DailyIframe.getCallInstance();
+  if (callObject) return callObject;
+
+  // If call instance does not yet exist, create it.
+  callObject = window.DailyIframe.createCallObject();
   const participantParentEle = document.getElementById('participants');
 
   // Set up relevant event handlers
@@ -229,7 +234,8 @@ function leave(callObject) {
   callObject.abortTestNetworkConnectivity();
   callObject.abortTestWebsocketConnectivity();
   callObject.stopTestConnectionQuality();
-  disableControls();
-  removeAllParticipantEles();
-  hideTestResults();
+  // Only enable test button again once call object is destroyed
+  callObject.destroy().then(() => {
+    enableTestBtn();
+  });
 }

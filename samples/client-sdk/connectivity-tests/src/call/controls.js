@@ -1,3 +1,5 @@
+import { hideTestResults, removeAllParticipantEles } from "./dom.js";
+
 export function setupTestBtn(handler) {
   const testBtn = getTestBtn();
   testBtn.onclick = (ev) => {
@@ -18,8 +20,11 @@ export function disableTestBtn() {
 
 export function setupLeaveBtn(handler) {
   const btn = getLeaveBtn();
-  btn.onclick = () => {
+  btn.onclick = (ev) => {
     ev.preventDefault();
+    disableControls();
+    removeAllParticipantEles();
+    hideTestResults();
     handler();
   };
 }
@@ -40,7 +45,6 @@ export function disableControls() {
     const btn = allButtons[i];
     btn.disabled = true;
   }
-  enableTestBtn();
 }
 
 function getLeaveBtn() {
