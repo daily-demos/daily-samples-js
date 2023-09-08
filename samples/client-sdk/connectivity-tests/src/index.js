@@ -231,9 +231,12 @@ function testWebSocketConnectivity(callObject) {
  */
 function leave(callObject) {
   callObject.setLocalVideo(false);
+
+  // Abort any tests that may currently be running.
   callObject.abortTestNetworkConnectivity();
   callObject.abortTestWebsocketConnectivity();
   callObject.stopTestConnectionQuality();
+
   // Only enable test button again once call object is destroyed
   callObject.destroy().then(() => {
     enableTestBtn();

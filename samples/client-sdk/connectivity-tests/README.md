@@ -1,8 +1,14 @@
 # Connectivity tests sample
 
-This small sample app shows the use of Daily's connectivity test methods. These methods enable developers to test a video call participant's network and WebSocket connectivity, and measure their connection quality. 
+This small sample app shows the use of Daily's connectivity test methods:
 
-In this sample, participants do not join a Daily room. Instead, it shows a potential pre-call flow in which a camera is started and Daily's connectivity test methods are run.
+* [`testConnectionQuality()`](https://docs.daily.co/reference/daily-js/instance-methods/test-connection-quality)
+* [`testNetworkConnectivity()`](https://docs.daily.co/reference/daily-js/instance-methods/test-network-connectivity)
+* [`testWebsocketConnectivity`](https://docs.daily.co/reference/daily-js/instance-methods/test-websocket-connectivity)
+
+The above methods enable developers to test a video call participant's network and WebSocket connectivity, and measure their connection quality. 
+
+In this sample, participants do not join a Daily room. Instead, they go through a pre-call flow similar to what one might utilize in a pre-join lobby, except without camera and microphone controls. Their camera is started and the above tests are run, with the result being displayed above their video.
 
 ![Video call participant testing their connectivity](screenshot.png)
 
