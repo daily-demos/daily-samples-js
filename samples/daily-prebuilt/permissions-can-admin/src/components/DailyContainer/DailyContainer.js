@@ -49,19 +49,21 @@ export default function DailyContainer() {
     console.log(e.action);
     // Return early if the participant list isn't set yet.
     // This event is sometimes emitted before the joined-meeting event.
-    if (!prevParticipants.current[e.participant.session_id]) return;
+    const { participant } = e;
+    const id = participant.session_id;
+    if (!prevParticipants.current[id]) return;
     // Only update the participants list if the permission has changed.
     // Daily Prebuilt handles all other call changes for us.
     if (
-      prevParticipants.current[e.participant.session_id].permissions
-        .canAdmin !== e.participant.permissions.canAdmin
+      prevParticipants.current[id].permissions.canAdmin !==
+      participant.permissions.canAdmin
     ) {
       setParticipants((p) => ({
         ...p,
-        [e.participant.session_id]: e.participant,
+        [id]: participant,
       }));
-      if (e.participant.local) {
-        setIsAdmin(e.participant.permissions.canAdmin);
+      if (participant.local) {
+        setIsAdmin(participant.permissions.canAdmin);
       }
     }
   };

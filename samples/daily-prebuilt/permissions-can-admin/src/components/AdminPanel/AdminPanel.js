@@ -49,8 +49,8 @@ export default function AdminPanel({
 
       {localIsAdmin && (
         <p>
-          You have meeting admin privileges to remove <b>non-admins</b>
-          or make them admins.
+          You have meeting admin privileges to remove <b>non-admins</b> or make
+          them admins.
         </p>
       )}
 
