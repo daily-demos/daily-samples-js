@@ -1,0 +1,28 @@
+button {
+  padding: 4px 16px;
+  border: 1px solid var(--mint-secondary);
+  border-radius: 12px;
+  background-color: var(--mint);
+  cursor: pointer;
+}
+
+.admin-panel {
+  padding: 0 16px;
+  border: 1px solid #c8d1dc;
+  border-radius: 12px;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+li button {
+  margin-left: 1rem;
+}
+
+.red-button-secondary {
+  border: red 1px solid;
+  background-color: var(--red-secondary);
+}

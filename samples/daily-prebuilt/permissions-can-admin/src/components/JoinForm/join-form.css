@@ -1,0 +1,35 @@
+.join-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 2rem 0;
+}
+
+label {
+  font-size: 12px;
+  color: var(--grey-secondary);
+  text-align: left;
+  margin: 8px 0 4px;
+}
+
+input[type="text"],
+input[type="url"] {
+  padding: 8px;
+  border: 1px solid var(--grey);
+  border-radius: 12px;
+}
+
+input[type="submit"] {
+  padding: 8px 16px 8px;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  background-color: var(--mint);
+  cursor: pointer;
+}
+
+input[type="submit"]:disabled {
+  cursor: not-allowed;
+}
