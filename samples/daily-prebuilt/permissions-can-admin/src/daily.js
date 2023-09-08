@@ -1,10 +1,12 @@
 const createRoom = async () => {
+  const expiry = Math.round(Date.now() / 1000) + 60 * 60;
   const roomRes = await fetch('/api/rooms', {
     method: 'POST',
     body: JSON.stringify({
       properties: {
         enable_prejoin_ui: false,
         start_audio_off: true,
+        exp: expiry,
       },
     }),
   });

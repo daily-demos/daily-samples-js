@@ -42,15 +42,15 @@ export default function AdminPanel({
       <h3>Participant list</h3>
       {localIsOwner && (
         <p>
-          You are a meeting owner and can remove <b>non-owners</b>
-          or make them admins.
+          You are a meeting owner and can remove <b>non-owners</b> or make them
+          admins.
         </p>
       )}
 
       {localIsAdmin && (
         <p>
-          You have meeting admin privileges to remove <b>non-admins</b>
-          or make them admins.
+          You have meeting admin privileges to remove <b>non-admins</b> or make
+          them admins.
         </p>
       )}
 

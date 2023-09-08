@@ -47,21 +47,23 @@ export default function DailyContainer() {
 
   const handleParticipantUpdate = (e) => {
     console.log(e.action);
-    // // Return early if the participant list isn't set yet.
-    // // This event is sometimes emitted before the joined-meeting event.
-    if (!prevParticipants.current[e.participant.session_id]) return;
+    // Return early if the participant list isn't set yet.
+    // This event is sometimes emitted before the joined-meeting event.
+    const { participant } = e;
+    const id = participant.session_id;
+    if (!prevParticipants.current[id]) return;
     // Only update the participants list if the permission has changed.
     // Daily Prebuilt handles all other call changes for us.
     if (
-      prevParticipants.current[e.participant.session_id].permissions
-        .canAdmin !== e.participant.permissions.canAdmin
+      prevParticipants.current[id].permissions.canAdmin !==
+      participant.permissions.canAdmin
     ) {
       setParticipants((p) => ({
         ...p,
-        [e.participant.session_id]: e.participant,
+        [id]: participant,
       }));
-      if (e.participant.local) {
-        setIsAdmin(e.participant.permissions.canAdmin);
+      if (participant.local) {
+        setIsAdmin(participant.permissions.canAdmin);
       }
     }
   };
@@ -75,9 +77,24 @@ export default function DailyContainer() {
     });
   };
 
+  const handleError = (e) => {
+    console.log(e.action);
+    setError(e.errorMsg);
+  };
+
   const handleLeftMeeting = useCallback(
     (e) => {
       console.log(e.action);
+
+      if (callFrame) {
+        // https://docs.daily.co/reference/daily-js/instance-methods/off
+        callFrame
+          .off('joined-meeting', handleJoinedMeeting)
+          .off('participant-joined', handleParticipantJoined)
+          .off('participant-updated', handleParticipantUpdate)
+          .off('participant-left', handleParticipantLeft)
+          .off('error', handleError);
+      }
 
       // Reset state
       setCallFrame(null);
@@ -88,13 +105,8 @@ export default function DailyContainer() {
     [callFrame]
   );
 
-  const handleError = (e) => {
-    console.log(e.action);
-    setError(e.errorMsg);
-  };
-
   const addDailyEvents = (dailyCallFrame) => {
-    // https://docs.daily.co/reference/daily-js/events
+    // https://docs.daily.co/reference/daily-js/instance-methods/on
     dailyCallFrame
       .on('joined-meeting', handleJoinedMeeting)
       .on('participant-joined', handleParticipantJoined)
@@ -102,16 +114,6 @@ export default function DailyContainer() {
       .on('participant-left', handleParticipantLeft)
       .on('left-meeting', handleLeftMeeting)
       .on('error', handleError);
-  };
-
-  const removeDailyEvents = (dailyCallFrame) => {
-    dailyCallFrame
-      .off('joined-meeting', handleJoinedMeeting)
-      .off('participant-joined', handleParticipantJoined)
-      .off('participant-updated', handleParticipantUpdate)
-      .off('participant-left', handleParticipantLeft)
-      .off('left-meeting', handleLeftMeeting)
-      .off('error', handleError);
   };
 
   const joinRoom = async ({ name, roomURL, token, localIsOwner }) => {
@@ -222,10 +224,9 @@ export default function DailyContainer() {
   const leaveCall = useCallback(() => {
     // https://docs.daily.co/reference/daily-js/instance-methods/leave
     callFrame.leave();
-    removeDailyEvents(callFrame);
     // https://docs.daily.co/reference/daily-js/instance-methods/destroy
     callFrame.destroy();
-  }, [callFrame, removeDailyEvents]);
+  }, [callFrame]);
 
   const localLink = useCallback(
     () => `http://localhost:3000/?url=${url}`,
