@@ -48,7 +48,7 @@ export default function DailyContainer() {
   const handleParticipantUpdate = (e) => {
     console.log(e.action);
     // Return early if the participant list isn't set yet.
-    // // This event is sometimes emitted before the joined-meeting event.
+    // This event is sometimes emitted before the joined-meeting event.
     if (!prevParticipants.current[e.participant.session_id]) return;
     // Only update the participants list if the permission has changed.
     // Daily Prebuilt handles all other call changes for us.
