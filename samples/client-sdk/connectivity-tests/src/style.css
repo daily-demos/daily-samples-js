@@ -116,6 +116,7 @@ button:disabled {
     background-color: #1f2d3d;
     color: #c8d1dc;
     border: 1px solid #c8d1dc;
+    cursor: not-allowed;
 }
 
 .hidden {
