@@ -23,4 +23,4 @@ npm i
 npm run dev
 ```
 
-Then, navigate to the port shown in your terminal output. This will likely be `http://localhost:8080`
+Then, navigate to the port shown in your terminal output. This will likely be `http://localhost:8080`.
