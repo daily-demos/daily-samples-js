@@ -7,7 +7,6 @@ import { hideTestResults, removeAllParticipantEles } from './dom.js';
 export function setupTestBtn(handler) {
   const testBtn = getTestBtn();
   testBtn.onclick = (ev) => {
-    ev.preventDefault();
     handler();
   };
 }
@@ -16,16 +15,14 @@ export function setupTestBtn(handler) {
  * Enables the test button
  */
 export function enableTestBtn() {
-  const testBtn = getTestBtn();
-  testBtn.disabled = false;
+  getTestBtn().disabled = false;
 }
 
 /**
  * Disables the test button
  */
 export function disableTestBtn() {
-  const testBtn = getTestBtn();
-  testBtn.disabled = true;
+  getTestBtn().disabled = true;
 }
 
 /**
@@ -35,7 +32,6 @@ export function disableTestBtn() {
 export function setupLeaveBtn(handler) {
   const btn = getLeaveBtn();
   btn.onclick = (ev) => {
-    ev.preventDefault();
     disableControls();
     removeAllParticipantEles();
     hideTestResults();

@@ -15,6 +15,15 @@
     padding-bottom: 10px;
 }
 
+#header span {
+    display: flex;
+}
+
+#header img {
+    height: 20px;
+    padding-left: 8px;
+}
+
 #header a {
     color: #6b7785;
 }
