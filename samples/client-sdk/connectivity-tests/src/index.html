@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Daily Connectivity Tests</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./style.css" rel="stylesheet" />  
+</head>
+  <body>
+    <noscript>
+        This application requires JavaScript to run. Please enable JavaScript in
+        your browser.
+    </noscript>
+    <div id="header">
+      <span>Daily connectivity tests sample</span><span>powered by <a href="https://docs.daily.co"><img src="./logo.svg" alt="Daily logo" /></a></span>
+    </div>
+    <div id="container">
+        <div id="controls">
+            <button id="test">Run Tests</button>
+            <div id="incall">
+              <button id="leave" disabled>Leave</button>
+            </div>
+        </div>
+        <div id="tests" class="tests hidden">
+          <ul>
+            <li><b>Network connectivity:</b>
+              <br /><span id="connectivity-test-results"></span></li>
+            <li><b>Network connection quality:</b>
+              <br /><span id="connection-test-results"></span></li>
+            <li><b>WebSocket connectivity:</b>
+              <br /><span id="websocket-test-results"></span></li>
+          </ul>
+          <p>Reminder: you have not joined the call and others cannot see you!</p> 
+        </div>
+        <div id="participants"></div>
+    </div>
+    <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
+    <script  type="module" src="./index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+    "name": "daily-connectivity-tests",
+    "version": "1.0.0",
+    "description": "A sample showing Daily connectivity test methods",
+    "scripts": {
+        "dev": "http-server src/ -c-1 --cors='*'"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/daily-demos/daily-samples-js.git"
+    },
+    "author": "Liza Shulyayeva",
+    "license": "BSD-2-Clause",
+    "bugs": {
+        "url": "https://github.com/daily-demos/daily-samples-js/issues"
+    },
+    "homepage": "https://github.com/daily-demos/daily-samples-js#readme",
+    "devDependencies": {
+        "http-server": "^14.1.1"
+    }
+}
