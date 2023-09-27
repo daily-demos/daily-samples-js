@@ -213,6 +213,9 @@ function testWebSocketConnectivity(callObject) {
         case 'passed':
           resultMsg = 'You are able to connect to WebSockets in all regions.';
           break;
+        case 'aborted':
+          resultMsg = 'The WebSocket connectivity test was aborted.';
+          break;
         default:
           resultMsg = `Unexpected network connectivity test result: ${JSON.stringify(
             testResult
