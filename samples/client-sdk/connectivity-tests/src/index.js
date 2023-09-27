@@ -125,7 +125,6 @@ function testConnectionQuality(callObject, videoTrack) {
       duration: 5, // In seconds
     })
     .then((res) => {
-      console.log('res:', res);
       const testResult = res.result;
       let resultMsg = '';
       switch (testResult) {
