@@ -6,7 +6,7 @@ import { hideTestResults, removeAllParticipantEles } from './dom.js';
  */
 export function setupTestBtn(handler) {
   const testBtn = getTestBtn();
-  testBtn.onclick = (ev) => {
+  testBtn.onclick = () => {
     handler();
   };
 }
@@ -31,7 +31,7 @@ export function disableTestBtn() {
  */
 export function setupLeaveBtn(handler) {
   const btn = getLeaveBtn();
-  btn.onclick = (ev) => {
+  btn.onclick = () => {
     disableControls();
     removeAllParticipantEles();
     hideTestResults();
