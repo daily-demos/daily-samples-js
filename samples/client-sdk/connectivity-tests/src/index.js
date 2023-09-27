@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupLeaveBtn(() => {
       leave(callObject);
     });
-    runTests(callObject);
+    startTests(callObject);
   });
 });
 
@@ -48,13 +48,14 @@ function setupCallObject() {
       const p = e.participant;
       if (!p.local) return;
 
+      // Create a participant element
       const newTrack = e.track;
-
       addParticipantEle(p, participantParentEle);
       updateMediaTrack(p.session_id, newTrack);
-      enableControls(callObject);
+
+      // If this is a video track, run all tests.
       if (e.type === 'video') {
-        doAllTests(callObject, newTrack);
+        runAllTests(callObject, newTrack);
       }
     })
     .on('error', (e) => {
@@ -68,11 +69,11 @@ function setupCallObject() {
 }
 
 /**
- * Runs Daily's connection test methods and presents the results.
+ * Starts Daily's connection test methods and presents the results.
  * @param {DailyCall} callObject
  * @returns
  */
-function runTests(callObject) {
+function startTests(callObject) {
   disableTestBtn();
 
   // Reset results, in case this is a re-run.
@@ -83,7 +84,7 @@ function runTests(callObject) {
   const localParticipant = callObject.participants().local;
   const videoTrack = localParticipant?.tracks?.video?.persistentTrack;
   if (videoTrack) {
-    doAllTests(callObject, videoTrack);
+    runAllTests(callObject, videoTrack);
     return;
   }
 
@@ -102,7 +103,7 @@ function runTests(callObject) {
  * @param {DailyCall} callObject
  * @param {MediaStreamTrack} videoTrack
  */
-function doAllTests(callObject, videoTrack) {
+function runAllTests(callObject, videoTrack) {
   Promise.all([
     testConnectionQuality(callObject, videoTrack),
     testNetworkConnectivity(callObject, videoTrack),
