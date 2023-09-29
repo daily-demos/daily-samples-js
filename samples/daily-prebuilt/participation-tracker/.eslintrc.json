@@ -1,0 +1,8 @@
+{
+    "extends": ["next","next/core-web-vitals"],
+    "rules": {
+        "prettier/prettier": ["error", { "singleQuote": true, "jsxSingleQuote": true }],
+        "quotes": ["error", "single"],
+        "jsx-quotes": ["error", "prefer-single"]
+    }
+}

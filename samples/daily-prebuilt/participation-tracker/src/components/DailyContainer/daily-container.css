@@ -1,0 +1,28 @@
+.daily-container {
+  width: 100%;
+  aspect-ratio: 16/10;
+}
+
+.call {
+  width: 70%;
+  aspect-ratio: 16/10;
+  margin: auto;
+}
+
+.red-button {
+  background-color: var(--red);
+  border: #702727 1px solid;
+  color: var(--white);
+  margin-right: 1rem;
+}
+
+.call-header {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0;
+}
+
+.error-msg {
+  color: var(--red);
+  font-weight: bold;
+}
