@@ -10,9 +10,6 @@ export default function Home() {
       <div className='container'>
         <Header />
         <h1>Daily permissions demo</h1>
-        <h2>
-          Display participant participation stats while live in a Daily call
-        </h2>
 
         <div className='content'>
           <DailyContainer />

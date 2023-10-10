@@ -18,11 +18,15 @@
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.48.0",
+    "chart.js": "^4.4.0",
     "next": "13.4.16",
     "react": "18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@types/node": "20.7.2",
+    "@types/react": "18.2.23",
     "eslint-config-next": "^13.4.19"
   }
 }

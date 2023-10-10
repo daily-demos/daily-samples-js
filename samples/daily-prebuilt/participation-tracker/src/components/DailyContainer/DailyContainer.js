@@ -1,73 +1,138 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import DailyIframe from '@daily-co/daily-js';
 import JoinForm from '../JoinForm/JoinForm';
 import './daily-container.css';
+import ParticipationTracker from '../ParticipationTracker/ParticipationTracker';
 
 export default function DailyContainer() {
-  const searchParams = useSearchParams();
   const containerRef = useRef(null);
   const [callFrame, setCallFrame] = useState(null);
-  const [url, setUrl] = useState(null);
+  const [roomUrl, setRoomUrl] = useState(null);
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [participants, setParticipants] = useState({});
-  const prevParticipants = useRef();
+  const [activeSpeakerTally, setActiveSpeakerTally] = useState({});
+  const [currentActiveSpeaker, setCurrentActiveSpeaker] = useState(null);
+  const prevActiveSpeaker = useRef();
 
   useEffect(() => {
-    prevParticipants.current = participants;
-  }, [participants]);
+    console.log('current speaker updated');
+    prevActiveSpeaker.current = currentActiveSpeaker;
+  }, [currentActiveSpeaker]);
 
   useEffect(() => {
-    const urlParam = searchParams.get('url');
-    if (urlParam) {
-      setUrl(urlParam);
-    }
-  }, [searchParams]);
+    // console.log(activeSpeakerTally);
+  }, [activeSpeakerTally]);
 
-  const handleJoinedMeeting = (e) => {
-    console.log(e.action);
-    setParticipants((p) => ({
-      ...p,
-      [e.participants.local.session_id]: e.participants.local,
-    }));
-  };
+  const addEndTimeToLastActiveSpeaker = () => {
+    console.log('add end time');
+    const prevASRef = prevActiveSpeaker.current;
+    // Get the current time
+    const time = Date.now();
 
-  const handleParticipantJoined = (e) => {
-    console.log(e.action);
-    setParticipants((p) => ({
-      ...p,
-      [e.participant.session_id]: e.participant,
-    }));
-  };
+    // Update state for active speaker list: add end time
+    setActiveSpeakerTally((as) => {
+      const tally = {
+        ...as,
+      };
 
-  const handleParticipantUpdate = (e) => {
-    console.log(e.action);
-    // Return early if the participant list isn't set yet.
-    // This event is sometimes emitted before the joined-meeting event.
-    const { participant } = e;
-    const id = participant.session_id;
-    if (!prevParticipants.current[id]) return;
-    // Only update the participants list if the permission has changed.
-    // Daily Prebuilt handles all other call changes for us.
-    if (
-      true // todo
-    ) {
-      setParticipants((p) => ({
-        ...p,
-        [id]: participant,
-      }));
-    }
-  };
+      // Update last entry with the end and total speaking times
+      const lastActiveSpeakerTimeEntry = {
+        ...prevASRef,
+        currentActiveSpeaker: false,
+        endTime: time,
+        total: time - prevASRef.startTime, // Speaking time
+      };
 
-  const handleParticipantLeft = (e) => {
-    console.log(e.action);
-    setParticipants((p) => {
-      const currentParticipants = { ...p };
-      delete currentParticipants[e.participant.session_id];
-      return currentParticipants;
+      const lastASEntries = tally[prevASRef.id].entries;
+      // Update the tally to include the end and total times
+      lastASEntries[lastASEntries.length - 1] = lastActiveSpeakerTimeEntry;
+      return tally;
     });
+    setCurrentActiveSpeaker(null);
   };
+
+  const addAndUpdateCurrentActiveSpeakerList = (
+    newActiveSpeakerEntry,
+    currentTime
+  ) => {
+    // Update the AS tally with the current speaker and (optionally) add the previous speaker's end time
+    setActiveSpeakerTally((as) => {
+      // Make a copy of the current tally
+      const tally = {
+        ...as,
+      };
+
+      const speakerId = newActiveSpeakerEntry.id;
+      // Create a new item in the active speakers obj or push in the new entry
+      if (!tally[speakerId]) {
+        tally[speakerId] = {
+          name: newActiveSpeakerEntry.name,
+          entries: [newActiveSpeakerEntry],
+        };
+      } else {
+        tally[speakerId].entries.push(newActiveSpeakerEntry);
+      }
+
+      const prevASRef = prevActiveSpeaker.current;
+
+      // *IF* there was a previous active speaker, log their end time. (This will only be false the first time someone speaks or if everyone was muted.)
+      if (prevASRef) {
+        // Update last entry with the end and total speaking times
+        const prevActiveSpeakerTimeEntry = {
+          ...prevASRef,
+          currentSpeaker: false,
+          endTime: currentTime,
+          total: currentTime - prevASRef.startTime, // Speaking time
+        };
+
+        const prevASEntries = tally[prevASRef.id].entries;
+        // Update the tally to include the end and total times
+        prevASEntries[prevASEntries.length - 1] = prevActiveSpeakerTimeEntry;
+      }
+      console.log(tally);
+      return tally;
+    });
+    setCurrentActiveSpeaker(newActiveSpeakerEntry);
+  };
+
+  const handleActiveSpeakerChange = useCallback(
+    (e, cf) => {
+      console.log(e);
+      const activeSpeakerId = e.activeSpeaker.peerId;
+      const prevASRef = prevActiveSpeaker.current;
+
+      console.log(activeSpeakerId, prevASRef?.id);
+
+      // If *somehow* it's the same speaker, early out. (This shouldn't happen but just in case.)
+      if (prevASRef?.id === activeSpeakerId) return;
+      // If the active speaker ID is null, everyone is muted. Add an end time to last active speaker.
+      if (!activeSpeakerId) {
+        addEndTimeToLastActiveSpeaker();
+        return;
+      }
+
+      // Get the current time
+      const time = Date.now();
+
+      // Retrieve all current call participants
+      const participants = cf.participants();
+      // Get the active speaker's user name from the participants object
+      const activeSpeakerName = participants[activeSpeakerId]
+        ? participants[activeSpeakerId].user_name
+        : participants.local.user_name;
+
+      // The new active speaker will have a start time but no end time (yet) since they're still speaking
+      const newActiveSpeakerEntry = {
+        name: activeSpeakerName,
+        currentSpeaker: true,
+        id: activeSpeakerId,
+        startTime: time,
+      };
+
+      addAndUpdateCurrentActiveSpeakerList(newActiveSpeakerEntry, time);
+    },
+    [prevActiveSpeaker]
+  );
 
   const handleError = (e) => {
     console.log(e.action);
@@ -81,17 +146,13 @@ export default function DailyContainer() {
       if (callFrame) {
         // https://docs.daily.co/reference/daily-js/instance-methods/off
         callFrame
-          .off('joined-meeting', handleJoinedMeeting)
-          .off('participant-joined', handleParticipantJoined)
-          .off('participant-updated', handleParticipantUpdate)
-          .off('participant-left', handleParticipantLeft)
+          .off('active-speaker-change', handleActiveSpeakerChange)
           .off('error', handleError);
       }
 
       // Reset state
       setCallFrame(null);
       setSubmitting(false);
-      setParticipants({});
     },
     [callFrame]
   );
@@ -99,15 +160,14 @@ export default function DailyContainer() {
   const addDailyEvents = (dailyCallFrame) => {
     // https://docs.daily.co/reference/daily-js/instance-methods/on
     dailyCallFrame
-      .on('joined-meeting', handleJoinedMeeting)
-      .on('participant-joined', handleParticipantJoined)
-      .on('participant-updated', handleParticipantUpdate)
-      .on('participant-left', handleParticipantLeft)
       .on('left-meeting', handleLeftMeeting)
+      .on('active-speaker-change', (e) =>
+        handleActiveSpeakerChange(e, dailyCallFrame)
+      )
       .on('error', handleError);
   };
 
-  const joinRoom = async ({ name, roomURL }) => {
+  const joinRoom = async ({ name, url }) => {
     const callContainerDiv = containerRef.current;
     // https://docs.daily.co/reference/daily-js/factory-methods/create-frame
     const dailyCallFrame = DailyIframe.createFrame(callContainerDiv, {
@@ -119,14 +179,14 @@ export default function DailyContainer() {
 
     addDailyEvents(dailyCallFrame);
 
-    const options = { userName: name, url: roomURL };
+    const options = { userName: name, url };
 
     setSubmitting(true);
     try {
       // https://docs.daily.co/reference/daily-js/instance-methods/join
       await dailyCallFrame.join(options);
       setCallFrame(dailyCallFrame);
-      setUrl(roomURL);
+      setRoomUrl(url);
       setSubmitting(false);
     } catch (e) {
       console.error(e);
@@ -139,7 +199,7 @@ export default function DailyContainer() {
     // Clear previous error
     setError(null);
     const { target } = e;
-    const options = { name: target.name.value };
+    const options = { name: target.name.value, url: target.url.value };
 
     joinRoom(options);
   };
@@ -151,11 +211,6 @@ export default function DailyContainer() {
     callFrame.destroy();
   }, [callFrame]);
 
-  const localLink = useCallback(
-    () => `http://localhost:3000/?url=${url}`,
-    [url]
-  );
-
   return (
     <div className='daily-container'>
       {error && (
@@ -165,28 +220,26 @@ export default function DailyContainer() {
       )}
       {!callFrame && !submitting && !error && (
         <>
-          <h3>Join a Daily room of your choice.</h3>
-          <JoinForm handleSubmitForm={handleSubmitJoinForm} url={url} />
+          <h2>Display participation stats while live in a Daily call</h2>
+          <JoinForm handleSubmitForm={handleSubmitJoinForm} url={roomUrl} />
         </>
       )}
       {submitting && <p>Loading...</p>}
       {callFrame && (
         <>
           <p>
-            <span>Share this link to let others join:</span>{' '}
-            <a href={localLink()} target='_blank' rel='noopener noreferrer'>
-              {localLink()}
+            External Daily room URL:{' '}
+            <a href={roomUrl} target='_blank' rel='noopener noreferrer'>
+              {roomUrl}
             </a>
           </p>
           <p>
-            External Daily room URL:{' '}
-            <a href={url} target='_blank' rel='noopener noreferrer'>
-              {url}
-            </a>
+            Current speaker:{' '}
+            {currentActiveSpeaker?.name || 'No one is speaking'}
           </p>
+          <p>Start time:{currentActiveSpeaker?.startTime || 'N/A'}</p>
         </>
       )}
-
       {callFrame && (
         <div className='call-header'>
           <button className='red-button' onClick={leaveCall}>
@@ -194,7 +247,11 @@ export default function DailyContainer() {
           </button>
         </div>
       )}
+
       <div className='call' ref={containerRef}></div>
+      {callFrame && (
+        <ParticipationTracker activeSpeakerTally={activeSpeakerTally} />
+      )}
     </div>
   );
 }
