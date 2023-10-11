@@ -9,7 +9,7 @@ export default function Home() {
     <main className='main'>
       <div className='container'>
         <Header />
-        <h1>Daily permissions demo</h1>
+        <h1>Daily participation tracker demo</h1>
 
         <div className='content'>
           <DailyContainer />

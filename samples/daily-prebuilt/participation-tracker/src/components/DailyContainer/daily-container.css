@@ -4,9 +4,7 @@
 }
 
 .call {
-  width: 70%;
-  aspect-ratio: 16/10;
-  margin: auto;
+  flex: 2;
 }
 
 .red-button {
@@ -14,6 +12,8 @@
   border: #702727 1px solid;
   color: var(--white);
   margin-right: 1rem;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .call-header {
@@ -25,4 +25,8 @@
 .error-msg {
   color: var(--red);
   font-weight: bold;
+}
+
+.call-container {
+  display: flex;
 }

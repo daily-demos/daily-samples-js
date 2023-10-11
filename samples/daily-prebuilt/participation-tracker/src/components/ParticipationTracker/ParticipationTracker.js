@@ -5,50 +5,36 @@ import {
   Tooltip,
   Legend,
   CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
   Title,
 } from 'chart.js';
-import { Doughnut, Line } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import colors from '../../app/colors';
+import SpeakerTotals from '../SpeakerTotals/SpeakerTotals';
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title
-);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, Title);
 
-// const options = {
-//   responsive: true,
-//   plugins: {
-//     legend: {
-//       position: 'top' as const,
-//     },
-//     title: {
-//       display: true,
-//       text: 'Chart.js Line Chart',
-//     },
-//   },
-// };
-
-const getTotalTime = (entry) => entry?.total || Date.now() - entry.startTime;
+const options = {
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+    title: {
+      display: true,
+      text: 'Total speaking times',
+    },
+  },
+};
 
 export default function ParticipationTracker({ activeSpeakerTally }) {
-  if (!activeSpeakerTally) return null;
+  if (!activeSpeakerTally || Object.keys(activeSpeakerTally).length < 1) {
+    return <div className='participation-tracker-graph'></div>;
+  }
+
+  console.log(activeSpeakerTally);
 
   const speakers = Object.values(activeSpeakerTally);
   const speakerNames = speakers.map((s) => s.name);
-
-  // If the speaker is the current active speaker, they won't have a total time count yet. Use the current time as a placeholder.
-  const totalSpeakerTimes = speakers.map((s) =>
-    s.entries.reduce((total, entry) => total + getTotalTime(entry), 0)
-  );
+  const totalSpeakerTimes = speakers.map((s) => s.total);
 
   const backgroundColors = colors.slice(0, speakers.length);
 
@@ -64,26 +50,10 @@ export default function ParticipationTracker({ activeSpeakerTally }) {
     ],
   };
 
-  const lineChartDataSets = speakers.map((s, i) => ({
-    label: s.name,
-    data: s.entries.map((e) => getTotalTime(e)),
-    backgroundColor: backgroundColors[i],
-  }));
-
-  console.log(lineChartDataSets);
-
-  const lineChartData = {
-    labels: speakerNames,
-    datasets: lineChartDataSets,
-  };
   return (
-    <div className='participation-tracker-container'>
-      <div className='participation-tracker-graph'>
-        <Doughnut data={barChartData} />
-      </div>
-      <div className='participation-tracker-graph'>
-        <Line data={lineChartData} />
-      </div>
+    <div className='participation-tracker-graph'>
+      <Doughnut data={barChartData} options={options} />
+      <SpeakerTotals speakers={speakers} backgroundColors={backgroundColors} />
     </div>
   );
 }

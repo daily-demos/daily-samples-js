@@ -3,6 +3,7 @@ import DailyIframe from '@daily-co/daily-js';
 import JoinForm from '../JoinForm/JoinForm';
 import './daily-container.css';
 import ParticipationTracker from '../ParticipationTracker/ParticipationTracker';
+import useInterval from '../../app/hooks/useInterval';
 
 export default function DailyContainer() {
   const containerRef = useRef(null);
@@ -14,47 +15,48 @@ export default function DailyContainer() {
   const [currentActiveSpeaker, setCurrentActiveSpeaker] = useState(null);
   const prevActiveSpeaker = useRef();
 
+  const delay = 2000; // Used to update speaker's total speaking time every ten seconds.
+
   useEffect(() => {
     console.log('current speaker updated');
     prevActiveSpeaker.current = currentActiveSpeaker;
   }, [currentActiveSpeaker]);
 
-  useEffect(() => {
-    // console.log(activeSpeakerTally);
-  }, [activeSpeakerTally]);
+  // Start interval to update their speaking time as they speaker. This will be cleared when a new speaker change occurs.
+  useInterval(
+    () =>
+      setActiveSpeakerTally((as) => {
+        const tally = {
+          ...as,
+        };
+        tally[currentActiveSpeaker.id].total += delay;
+        return tally;
+      }),
+    currentActiveSpeaker ? delay : null
+  );
 
-  const addEndTimeToLastActiveSpeaker = () => {
+  const endLastActiveSpeakerEntry = (speakerEntry) => {
     console.log('add end time');
-    const prevASRef = prevActiveSpeaker.current;
-    // Get the current time
-    const time = Date.now();
+
+    const { id, total } = speakerEntry;
 
     // Update state for active speaker list: add end time
     setActiveSpeakerTally((as) => {
       const tally = {
         ...as,
       };
-
-      // Update last entry with the end and total speaking times
-      const lastActiveSpeakerTimeEntry = {
-        ...prevASRef,
-        currentActiveSpeaker: false,
-        endTime: time,
-        total: time - prevASRef.startTime, // Speaking time
-      };
-
-      const lastASEntries = tally[prevASRef.id].entries;
-      // Update the tally to include the end and total times
-      lastASEntries[lastASEntries.length - 1] = lastActiveSpeakerTimeEntry;
+      // If they've already spoken, we can update the existing total by setting the final speaking time
+      if (tally[id]) {
+        tally[id].total = total;
+        console.log(tally);
+      }
       return tally;
     });
-    setCurrentActiveSpeaker(null);
   };
 
-  const addAndUpdateCurrentActiveSpeakerList = (
-    newActiveSpeakerEntry,
-    currentTime
-  ) => {
+  const addCurrentActiveSpeakerToTally = (speakerEntry) => {
+    console.log('start speaker time');
+
     // Update the AS tally with the current speaker and (optionally) add the previous speaker's end time
     setActiveSpeakerTally((as) => {
       // Make a copy of the current tally
@@ -62,57 +64,57 @@ export default function DailyContainer() {
         ...as,
       };
 
-      const speakerId = newActiveSpeakerEntry.id;
-      // Create a new item in the active speakers obj or push in the new entry
-      if (!tally[speakerId]) {
-        tally[speakerId] = {
-          name: newActiveSpeakerEntry.name,
-          entries: [newActiveSpeakerEntry],
+      const { id, name } = speakerEntry;
+
+      // If they haven't spoken, add their info to the tally.
+      // Their speaking time will be 0ms to start and will be updated as they speak.
+      if (!tally[id]) {
+        tally[id] = {
+          total: 0,
+          name,
         };
-      } else {
-        tally[speakerId].entries.push(newActiveSpeakerEntry);
       }
-
-      const prevASRef = prevActiveSpeaker.current;
-
-      // *IF* there was a previous active speaker, log their end time. (This will only be false the first time someone speaks or if everyone was muted.)
-      if (prevASRef) {
-        // Update last entry with the end and total speaking times
-        const prevActiveSpeakerTimeEntry = {
-          ...prevASRef,
-          currentSpeaker: false,
-          endTime: currentTime,
-          total: currentTime - prevASRef.startTime, // Speaking time
-        };
-
-        const prevASEntries = tally[prevASRef.id].entries;
-        // Update the tally to include the end and total times
-        prevASEntries[prevASEntries.length - 1] = prevActiveSpeakerTimeEntry;
-      }
-      console.log(tally);
       return tally;
     });
-    setCurrentActiveSpeaker(newActiveSpeakerEntry);
   };
 
+  /**
+   * 1. End previous active speaker's time and add their total to the tally.
+   * 2. Track new active speaker's start time to currentActiveSpeaker state and add them to the tally if they're not already in it.
+   * 3. Start interval to update the tally while they're still speaking to let the tracker graph refresh as they speak.
+   */
   const handleActiveSpeakerChange = useCallback(
     (e, cf) => {
       console.log(e);
       const activeSpeakerId = e.activeSpeaker.peerId;
+      console.log('new current speaker', activeSpeakerId);
       const prevASRef = prevActiveSpeaker.current;
 
       console.log(activeSpeakerId, prevASRef?.id);
 
       // If *somehow* it's the same speaker, early out. (This shouldn't happen but just in case.)
       if (prevASRef?.id === activeSpeakerId) return;
-      // If the active speaker ID is null, everyone is muted. Add an end time to last active speaker.
+
+      // Get the current time
+      const currentTime = Date.now();
+      let prevASEntry = null;
+      // First, check if this is not the first speaker in the call and add the total speaking time to the previous speaker's stats to end their AS status.
+      if (prevASRef) {
+        prevASEntry = {
+          ...prevASRef,
+          total: currentTime - prevASRef.startTime,
+        };
+        endLastActiveSpeakerEntry(prevASEntry);
+        setCurrentActiveSpeaker(null);
+      }
+
+      // If there's no current active speaker or there was a previous one, clear it in state to ensure the interval updating their total speaking time has stopped.
       if (!activeSpeakerId) {
-        addEndTimeToLastActiveSpeaker();
+        setCurrentActiveSpeaker(null);
         return;
       }
 
-      // Get the current time
-      const time = Date.now();
+      // Next, update the state for this new speaker.
 
       // Retrieve all current call participants
       const participants = cf.participants();
@@ -120,16 +122,16 @@ export default function DailyContainer() {
       const activeSpeakerName = participants[activeSpeakerId]
         ? participants[activeSpeakerId].user_name
         : participants.local.user_name;
-
-      // The new active speaker will have a start time but no end time (yet) since they're still speaking
-      const newActiveSpeakerEntry = {
+      console.log('active speaker name: ', activeSpeakerName);
+      const speaker = {
         name: activeSpeakerName,
-        currentSpeaker: true,
+        startTime: currentTime,
         id: activeSpeakerId,
-        startTime: time,
       };
-
-      addAndUpdateCurrentActiveSpeakerList(newActiveSpeakerEntry, time);
+      // Update the speaker tally
+      addCurrentActiveSpeakerToTally(speaker);
+      // Update the current speaker data
+      setCurrentActiveSpeaker(speaker);
     },
     [prevActiveSpeaker]
   );
@@ -139,6 +141,11 @@ export default function DailyContainer() {
     setError(e.errorMsg);
   };
 
+  const handleTrackStopped = (e) => {
+    console.log('STOPPED!');
+    console.log(e);
+  };
+
   const handleLeftMeeting = useCallback(
     (e) => {
       console.log(e.action);
@@ -146,6 +153,7 @@ export default function DailyContainer() {
       if (callFrame) {
         // https://docs.daily.co/reference/daily-js/instance-methods/off
         callFrame
+          .off('track-stopped', handleTrackStopped)
           .off('active-speaker-change', handleActiveSpeakerChange)
           .off('error', handleError);
       }
@@ -153,6 +161,8 @@ export default function DailyContainer() {
       // Reset state
       setCallFrame(null);
       setSubmitting(false);
+      setActiveSpeakerTally({});
+      setCurrentActiveSpeaker(null);
     },
     [callFrame]
   );
@@ -161,6 +171,7 @@ export default function DailyContainer() {
     // https://docs.daily.co/reference/daily-js/instance-methods/on
     dailyCallFrame
       .on('left-meeting', handleLeftMeeting)
+      .on('track-stopped', handleTrackStopped)
       .on('active-speaker-change', (e) =>
         handleActiveSpeakerChange(e, dailyCallFrame)
       )
@@ -174,6 +185,7 @@ export default function DailyContainer() {
       iframeStyle: {
         width: '100%',
         height: '100%',
+        aspectRatio: '16/10',
       },
     });
 
@@ -248,10 +260,12 @@ export default function DailyContainer() {
         </div>
       )}
 
-      <div className='call' ref={containerRef}></div>
-      {callFrame && (
-        <ParticipationTracker activeSpeakerTally={activeSpeakerTally} />
-      )}
+      <div className='call-container'>
+        <div className='call' ref={containerRef}></div>
+        {callFrame && (
+          <ParticipationTracker activeSpeakerTally={activeSpeakerTally} />
+        )}
+      </div>
     </div>
   );
 }

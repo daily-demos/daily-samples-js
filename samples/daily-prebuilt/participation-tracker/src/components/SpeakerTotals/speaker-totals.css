@@ -1,0 +1,19 @@
+.speaker-totals {
+  padding: 2rem;
+}
+
+.speaker-totals table {
+  border-collapse: collapse;
+}
+
+.speaker-totals tr {
+  border-bottom: grey 1px solid;
+}
+
+.speaker-totals td {
+  padding: 4px;
+}
+
+.color-cell {
+  width: 20px;
+}

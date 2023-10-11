@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Daily Permissions Demo',
+  title: 'Daily Participation Tracker Demo',
   description: 'Display participant participation live in a call.',
 };
 

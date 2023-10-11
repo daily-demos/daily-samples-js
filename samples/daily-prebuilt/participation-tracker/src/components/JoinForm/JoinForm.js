@@ -3,9 +3,8 @@ import './join-form.css';
 export default function JoinForm({ handleSubmitForm }) {
   return (
     <div>
-      <h3>Join a Daily room of your choice.</h3>
-
       <form className='join-form' onSubmit={handleSubmitForm}>
+        <h3>Start by joining a Daily room of your choice.</h3>
         <label htmlFor='name'>Your name</label>
         <input id='name' type='text' />
         <label htmlFor='url'>Daily room URL</label>
