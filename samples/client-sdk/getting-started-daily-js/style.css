@@ -1,0 +1,21 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+#videos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: start;
+}
+
+#videos video {
+  max-width: 500px;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  object-fit: cover;
+}
+.controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
