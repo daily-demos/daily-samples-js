@@ -7,6 +7,7 @@ class DailyCallManager {
     this.call = DailyIframe.createCallObject();
     this.isCameraMuted = null;
     this.isMicMuted = null;
+    this.currentRoomUrl = null;
     this.initialize();
   }
 
@@ -31,8 +32,9 @@ class DailyCallManager {
       'active-speaker-change': this.handleActiveSpeakerChange.bind(this),
       error: this.handleError.bind(this),
       'joined-meeting': this.handleJoin.bind(this),
-      'participant-joined': this.handleJoin.bind(this),
-      'participant-left': this.handleJoin.bind(this),
+      'left-meeting': this.handleLeave.bind(this),
+      'participant-joined': this.handleParticipantJoinLeft.bind(this),
+      'participant-left': this.handleParticipantJoinLeft.bind(this),
       'participant-updated': this.handleParticipantStateUpdate.bind(this),
       'track-started': this.displayTrack.bind(this),
       'track-stopped': this.destroyTrack.bind(this),
@@ -45,13 +47,50 @@ class DailyCallManager {
   }
 
   /**
-   * Handler for participant join events, updating participant count in the UI.
+   * Handler for the local participant joining:
+   * - Prints the room URL
+   * - Gets the initial track states
    */
   handleJoin() {
-    document.getElementById('participant-count').textContent = `Participants: ${
-      Object.keys(this.call.participants()).length
-    }`;
+    console.log(`Successfully joined: ${this.currentRoomUrl}`);
+
+    // Get the initial track states
     this.getTrackStates();
+
+    // Update the participant count
+    document.getElementById(
+      'participant-count'
+    ).textContent = `Participants: ${this.getParticipantCount()}`;
+  }
+
+  /**
+   * Handler for remote participants joining and leaving. Updates the participant count.
+   */
+  handleParticipantJoinLeft() {
+    document.getElementById(
+      'participant-count'
+    ).textContent = `Participants: ${this.getParticipantCount()}`;
+  }
+
+  /**
+   * Handler for participant leave events:
+   * - Confirms leaving with a console message
+   * - Disable the toggle camera and mic buttons
+   * - Resets the camera and mic selectors
+   * - Updates the call state in the UI
+   */
+  handleLeave() {
+    console.log('Successfully left the call');
+
+    // Update the call state in the UI
+    document.getElementById('camera-state').textContent = 'Camera: Off';
+    document.getElementById('mic-state').textContent = 'Mic: Off';
+    document.getElementById(
+      'participant-count'
+    ).textContent = `Participants: 0`;
+    document.getElementById(
+      'active-speaker'
+    ).textContent = `Active Speaker: None`;
   }
 
   /**
@@ -82,8 +121,8 @@ class DailyCallManager {
    * @param {Object} event - The track event object containing the video track.
    */
   displayVideo(event) {
-    let videosDiv = document.getElementById('videos');
-    let videoEl = document.createElement('video');
+    const videosDiv = document.getElementById('videos');
+    const videoEl = document.createElement('video');
     videosDiv.appendChild(videoEl);
     videoEl.style.width = '100%';
     videoEl.srcObject = new MediaStream([event.track]);
@@ -98,21 +137,23 @@ class DailyCallManager {
     if (event.participant.local) {
       return; // Avoid playing local audio
     }
-    let audioEl = document.createElement('audio'); // Create <audio> element
+    const audioEl = document.createElement('audio'); // Create <audio> element
     document.body.appendChild(audioEl); // Add <audio> element to DOM
     audioEl.srcObject = new MediaStream([event.track]); // Attach audio track to <audio> element
     audioEl.play(); // Play audio track
   }
 
   /**
-   * Removes the track's element (audio or video) from the DOM when it stops.
+   * Removes the track's element (audio or video) from the DOM when it stops
+   * and ensures media resources are released by setting srcObject to null.
    * @param {Object} event - The track event object.
    */
   destroyTrack(event) {
     let tracks = document.querySelectorAll('video, audio');
     tracks.forEach((el) => {
       if (el.srcObject && el.srcObject.getTracks().includes(event.track)) {
-        el.remove();
+        el.srcObject = null; // Release media resources
+        el.remove(); // Remove the element from the DOM
       }
     });
   }
@@ -145,17 +186,18 @@ class DailyCallManager {
       return;
     }
 
+    this.currentRoomUrl = roomUrl;
+
     const joinOptions = { url: roomUrl };
     if (joinToken) {
       joinOptions.token = joinToken;
-      console.log('Joining with token:', joinToken);
+      console.log('Joining with a token.');
     } else {
       console.log('Joining without a token.');
     }
 
     try {
       await this.call.join(joinOptions);
-      console.log(`Successfully joined: ${roomUrl}`);
     } catch (e) {
       console.error('Join failed:', e);
     }
@@ -165,10 +207,11 @@ class DailyCallManager {
    * Retrieves the track states of the local participant's tracks and updates the UI.
    */
   getTrackStates() {
-    if (this.call && this.call.participants().local) {
-      const localParticipant = this.call.participants().local;
-      this.isCameraMuted = localParticipant.tracks.video.state === 'off';
-      this.isMicMuted = localParticipant.tracks.audio.state === 'off';
+    const localParticipant = this.call.participants().local;
+    const tracks = localParticipant.tracks;
+    if (this.call && localParticipant) {
+      this.isCameraMuted = tracks.video.state === 'off';
+      this.isMicMuted = tracks.audio.state === 'off';
       this.updateUiForTrackStates();
     }
   }
@@ -204,24 +247,23 @@ class DailyCallManager {
   }
 
   /**
+   * Returns the number of participants in the call.
+   * @returns {number} The number of participants in the call.
+   */
+  getParticipantCount() {
+    return Object.keys(this.call.participants()).length;
+  }
+
+  /**
    * Leaves the call and performs necessary cleanup operations like removing video elements.
    */
   async leave() {
     try {
       await this.call.leave();
-      console.log('Successfully left the call');
-
-      // Remove video and audio elements
       document.querySelectorAll('#videos video, audio').forEach((el) => {
-        el.remove();
+        el.srcObject = null; // Release media resources
+        el.remove(); // Remove the element from the DOM
       });
-
-      document.getElementById(
-        'participant-count'
-      ).textContent = `Participants: 0`;
-      document.getElementById(
-        'active-speaker'
-      ).textContent = `Active Speaker: None`;
     } catch (e) {
       console.error('Leaving failed', e);
     }
