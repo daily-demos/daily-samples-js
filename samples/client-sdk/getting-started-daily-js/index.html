@@ -31,8 +31,17 @@
     </div>
 
     <div class="controls">
-      <button id="toggle-camera">Toggle Camera</button>
-      <button id="toggle-mic">Toggle Microphone</button>
+      <button id="toggle-camera" disabled="true">Toggle Camera</button>
+      <button id="toggle-mic" disabled="true">Toggle Microphone</button>
+    </div>
+
+    <div class="controls">
+      <select id="camera-selector">
+        <option value="" disabled selected>Select a camera</option>
+      </select>
+      <select id="mic-selector">
+        <option value="" disabled selected>Select a microphone</option>
+      </select>
     </div>
 
     <div id="status">

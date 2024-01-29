@@ -49,10 +49,19 @@ class DailyCallManager {
   /**
    * Handler for the local participant joining:
    * - Prints the room URL
+   * - Enables the toggle camera and mic buttons
    * - Gets the initial track states
+   * - Sets up the device selectors
    */
   handleJoin() {
     console.log(`Successfully joined: ${this.currentRoomUrl}`);
+
+    // Enable the toggle camera and mic buttons
+    document.getElementById('toggle-camera').disabled = false;
+    document.getElementById('toggle-mic').disabled = false;
+
+    // Set up the camera and mic selectors
+    this.setupDeviceSelectors();
 
     // Get the initial track states
     this.getTrackStates();
@@ -81,6 +90,18 @@ class DailyCallManager {
    */
   handleLeave() {
     console.log('Successfully left the call');
+
+    // Disable the toggle camera and mic buttons
+    document.getElementById('toggle-camera').disabled = true;
+    document.getElementById('toggle-mic').disabled = true;
+
+    // Reset and disable the camera and mic selectors
+    const cameraSelector = document.getElementById('camera-selector');
+    const micSelector = document.getElementById('mic-selector');
+    cameraSelector.selectedIndex = 0;
+    micSelector.selectedIndex = 0;
+    cameraSelector.disabled = true;
+    micSelector.disabled = true;
 
     // Update the call state in the UI
     document.getElementById('camera-state').textContent = 'Camera: Off';
@@ -161,7 +182,7 @@ class DailyCallManager {
   /**
    * Updates UI for track state changes (e.g., mute states).
    */
-  handleParticipantStateUpdate(event) {
+  handleParticipantStateUpdate() {
     this.getTrackStates();
   }
 
@@ -244,6 +265,81 @@ class DailyCallManager {
     document.getElementById('mic-state').textContent = `Mic: ${
       this.isMicMuted ? 'Off' : 'On'
     }`;
+  }
+
+  /**
+   * Sets up device selectors for cameras and microphones by populating
+   * them with available devices and listening for changes in selection.
+   */
+  async setupDeviceSelectors() {
+    // Fetch current input devices settings.
+    const selectedDevices = await this.call.getInputDevices();
+    // Destructure to extract deviceId for camera and mic
+    const currentCameraDeviceId = selectedDevices.camera.deviceId;
+    const currentMicDeviceId = selectedDevices.mic.deviceId;
+
+    // Fetch an array of device information objects representing
+    // the media input devices available on the system.
+    const { devices } = await this.call.enumerateDevices();
+
+    const cameraSelector = document.getElementById('camera-selector');
+    const micSelector = document.getElementById('mic-selector');
+
+    // Clear existing options in both selectors to prepare for fresh population.
+    cameraSelector.innerHTML = '';
+    micSelector.innerHTML = '';
+
+    // Add non-selectable prompt options to each dropdown as the first option.
+    const cameraPromptOption = new Option('Select a camera', '', true, true);
+    cameraPromptOption.disabled = true;
+    cameraSelector.appendChild(cameraPromptOption);
+
+    const micPromptOption = new Option('Select a microphone', '', true, true);
+    micPromptOption.disabled = true;
+    micSelector.appendChild(micPromptOption);
+
+    // Populate the selectors and set currently selected devices as selected
+    devices.forEach((device) => {
+      if (device.label) {
+        const option = new Option(device.label, device.deviceId);
+
+        if (device.kind === 'videoinput') {
+          cameraSelector.appendChild(option);
+          if (device.deviceId === currentCameraDeviceId) {
+            option.selected = true;
+          }
+        } else if (device.kind === 'audioinput') {
+          micSelector.appendChild(option);
+          if (device.deviceId === currentMicDeviceId) {
+            option.selected = true;
+          }
+        }
+      }
+    });
+
+    // Attach event listeners to the selectors to handle device changes.
+    this.addDeviceChangeListener(cameraSelector, 'video');
+    this.addDeviceChangeListener(micSelector, 'audio');
+  }
+
+  /**
+   * Attaches a change event listener to a device selector.
+   * This listener updates the currently selected device
+   * for video or audio based on user selection.
+   *
+   * @param {HTMLElement} selector - The <select> element for choosing a device.
+   * @param {string} deviceType - The type of device, either 'video' for cameras or 'audio' for microphones.
+   */
+  addDeviceChangeListener(selector, deviceType) {
+    selector.addEventListener('change', (e) => {
+      const deviceId = e.target.value;
+      // Call setInputDevicesAsync with the corresponding device ID based on the type of selector.
+      if (deviceType === 'video') {
+        this.call.setInputDevicesAsync({ videoDeviceId: deviceId });
+      } else if (deviceType === 'audio') {
+        this.call.setInputDevicesAsync({ audioDeviceId: deviceId });
+      }
+    });
   }
 
   /**
