@@ -145,6 +145,34 @@ class DailyCallManager {
   }
 
   /**
+   * Tries to join a call with provided room URL and optional join token.
+   * @param {string} roomUrl - The URL of the room to join.
+   * @param {string|null} joinToken - An optional token for joining the room.
+   */
+  async joinRoom(roomUrl, joinToken = null) {
+    if (!roomUrl) {
+      console.error('Room URL is required to join a room.');
+      return;
+    }
+
+    this.currentRoomUrl = roomUrl;
+
+    const joinOptions = { url: roomUrl };
+    if (joinToken) {
+      joinOptions.token = joinToken;
+      console.log('Joining with a token.');
+    } else {
+      console.log('Joining without a token.');
+    }
+
+    try {
+      await this.call.join(joinOptions);
+    } catch (e) {
+      console.error('Join failed:', e);
+    }
+  }
+
+  /**
    * Decides whether to display video or play audio based on the track type.
    * @param {Object} event - The track event object.
    */
@@ -163,7 +191,7 @@ class DailyCallManager {
    * @param {Object} event - The track event object containing the video track.
    */
   displayVideo(event) {
-    const participantId = event.participant.session_id; // Assume this is how we get the participant ID
+    const participantId = event.participant.session_id;
     let videoContainer = document.getElementById(
       `video-container-${participantId}`
     );
@@ -278,34 +306,6 @@ class DailyCallManager {
     document.getElementById(
       'active-speaker'
     ).textContent = `Active Speaker: ${event.activeSpeaker.peerId}`;
-  }
-
-  /**
-   * Tries to join a call with provided room URL and optional join token.
-   * @param {string} roomUrl - The URL of the room to join.
-   * @param {string|null} joinToken - An optional token for joining the room.
-   */
-  async joinRoom(roomUrl, joinToken = null) {
-    if (!roomUrl) {
-      console.error('Room URL is required to join a room.');
-      return;
-    }
-
-    this.currentRoomUrl = roomUrl;
-
-    const joinOptions = { url: roomUrl };
-    if (joinToken) {
-      joinOptions.token = joinToken;
-      console.log('Joining with a token.');
-    } else {
-      console.log('Joining without a token.');
-    }
-
-    try {
-      await this.call.join(joinOptions);
-    } catch (e) {
-      console.error('Join failed:', e);
-    }
   }
 
   /**

@@ -8,6 +8,7 @@ This demo shows how to:
 - Join a room
 - Attach video and audio tracks to the DOM
 - Control your camera and microphone devices
+- Select a new camera or microphone device
 - Leave a call and clean up
 
 ## Prerequisites
