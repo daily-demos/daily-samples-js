@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Daily Call Example</title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div>
+      <label for="room-url">Room URL:</label>
+      <input
+        type="text"
+        id="room-url"
+        size="50"
+        placeholder="https://yourcompany.daily.co/hello"
+      />
+    </div>
+    <div>
+      <label for="join-token">
+        <a
+          href="https://docs.daily.co/guides/configurations-and-settings/controlling-who-joins-a-meeting"
+          target="_blank"
+          >Meeting token:</a
+        >
+      </label>
+      <input type="text" id="join-token" size="50" placeholder="Optional" />
+    </div>
+
+    <div class="controls">
+      <button id="join-btn">Join Room</button>
+      <button id="leave-btn">Leave</button>
+    </div>
+
+    <div class="controls">
+      <button id="toggle-camera" disabled="true">Toggle Camera</button>
+      <button id="toggle-mic" disabled="true">Toggle Microphone</button>
+    </div>
+
+    <div class="controls">
+      <select id="camera-selector">
+        <option value="" disabled selected>Select a camera</option>
+      </select>
+      <select id="mic-selector">
+        <option value="" disabled selected>Select a microphone</option>
+      </select>
+    </div>
+
+    <div id="status">
+      <div id="camera-state">Camera: Off</div>
+      <div id="mic-state">Mic: Off</div>
+      <div id="participant-count">Participants: 0</div>
+      <div id="active-speaker">Active Speaker: None</div>
+    </div>
+
+    <div id="videos"></div>
+
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
