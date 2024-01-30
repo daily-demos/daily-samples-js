@@ -56,9 +56,11 @@ class DailyCallManager {
   handleJoin() {
     console.log(`Successfully joined: ${this.currentRoomUrl}`);
 
-    // Enable the toggle camera and mic buttons
+    // Enable the toggle camera and mic buttons and selectors
     document.getElementById('toggle-camera').disabled = false;
     document.getElementById('toggle-mic').disabled = false;
+    document.getElementById('camera-selector').disabled = false;
+    document.getElementById('mic-selector').disabled = false;
 
     // Set up the camera and mic selectors
     this.setupDeviceSelectors();
@@ -67,18 +69,29 @@ class DailyCallManager {
     this.getTrackStates();
 
     // Update the participant count
-    document.getElementById(
-      'participant-count'
-    ).textContent = `Participants: ${this.getParticipantCount()}`;
+    this.updateAndDisplayParticipantCount();
   }
 
   /**
    * Handler for remote participants joining and leaving. Updates the participant count.
    */
-  handleParticipantJoinLeft() {
-    document.getElementById(
-      'participant-count'
-    ).textContent = `Participants: ${this.getParticipantCount()}`;
+  handleParticipantJoinLeft(event) {
+    // Handle participant leaving
+    // Remove the remote participant's video container when they leave.
+    if (event.action === 'participant-left') {
+      const participantId = event.participant && event.participant.session_id;
+      if (participantId) {
+        const videoContainer = document.getElementById(
+          `video-container-${participantId}`
+        );
+        if (videoContainer) {
+          videoContainer.remove(); // Removes the video container from the DOM.
+        }
+      }
+    }
+
+    // Update the participant count
+    this.updateAndDisplayParticipantCount();
   }
 
   /**
@@ -112,6 +125,12 @@ class DailyCallManager {
     document.getElementById(
       'active-speaker'
     ).textContent = `Active Speaker: None`;
+
+    // Remove all video containers
+    const videosDiv = document.getElementById('videos');
+    while (videosDiv.firstChild) {
+      videosDiv.removeChild(videosDiv.firstChild);
+    }
   }
 
   /**
@@ -139,13 +158,49 @@ class DailyCallManager {
 
   /**
    * Adds a <video> element to the DOM and attaches the video track to it.
+   * Also displays the session ID of the participant as an overlay.
+   * If the video track is stopped, keeps the placeholder.
    * @param {Object} event - The track event object containing the video track.
    */
   displayVideo(event) {
-    const videosDiv = document.getElementById('videos');
-    const videoEl = document.createElement('video');
-    videosDiv.appendChild(videoEl);
-    videoEl.style.width = '100%';
+    const participantId = event.participant.session_id; // Assume this is how we get the participant ID
+    let videoContainer = document.getElementById(
+      `video-container-${participantId}`
+    );
+
+    // If a container for this participant doesn't exist, create it
+    if (!videoContainer) {
+      videoContainer = document.createElement('div');
+      videoContainer.id = `video-container-${participantId}`; // Use participant ID for unique container ID
+      videoContainer.className = 'video-container';
+      videoContainer.style.backgroundColor = '#ccc'; // Set a gray background for the placeholder
+      document.getElementById('videos').appendChild(videoContainer);
+
+      const sessionIdText = document.createElement('div');
+      sessionIdText.className = 'session-id-overlay';
+      sessionIdText.textContent = participantId;
+      videoContainer.appendChild(sessionIdText);
+    }
+
+    // Check if event track is active or not
+    if (!event.track.enabled) {
+      if (videoContainer.querySelector('video')) {
+        // If the video track is disabled but video element exists, clean up
+        videoContainer.querySelector('video').srcObject = null; // Free up media resources
+        // You might also want to change the placeholder style or add text/icon to indicate camera is off
+      }
+      return; // Exit without further processing if track is not active
+    }
+
+    // Create new video element and add to container if not exists or reuse existing one
+    const videoEl =
+      videoContainer.querySelector('video') || document.createElement('video');
+    videoEl.className = 'video-element';
+    if (!videoEl.parentElement) {
+      videoContainer.appendChild(videoEl);
+    }
+
+    videoEl.style.width = '100%'; // Ensure the video occupies the full container width
     videoEl.srcObject = new MediaStream([event.track]);
     videoEl.play();
   }
@@ -165,18 +220,47 @@ class DailyCallManager {
   }
 
   /**
-   * Removes the track's element (audio or video) from the DOM when it stops
+   * Removes a media element (audio or video) from the DOM for a specific participant
    * and ensures media resources are released by setting srcObject to null.
+   * @param {string} participantId - The ID of the participant.
+   * @param {string} trackKind - The kind of track ('video' or 'audio').
+   */
+  removeMediaElement(participantId, trackKind) {
+    // Construct the selector based on the track kind
+    let elementSelector;
+    if (trackKind === 'video') {
+      elementSelector = `#video-container-${participantId} video`;
+    } else if (trackKind === 'audio') {
+      elementSelector = 'audio';
+    } else {
+      console.error('Unsupported track kind:', trackKind);
+      return;
+    }
+
+    const element = document.querySelector(elementSelector);
+    if (element) {
+      element.srcObject = null; // Release media resources
+      element.remove(); // Remove the element from the DOM
+    }
+  }
+
+  /**
+   * Adjusted destroyTrack method that calls removeMediaElement for each track.
    * @param {Object} event - The track event object.
    */
   destroyTrack(event) {
-    let tracks = document.querySelectorAll('video, audio');
-    tracks.forEach((el) => {
-      if (el.srcObject && el.srcObject.getTracks().includes(event.track)) {
-        el.srcObject = null; // Release media resources
-        el.remove(); // Remove the element from the DOM
-      }
-    });
+    const participantId = event.participant && event.participant.session_id;
+    // Ensure participantId exists for video tracks, or use a placeholder for audio
+    const effectiveParticipantId =
+      event.track.kind === 'video' ? participantId : 'localAudio';
+    if (effectiveParticipantId) {
+      this.removeMediaElement(effectiveParticipantId, event.track.kind);
+    } else {
+      console.error(
+        'Participant ID was not found for the track:',
+        event.track.kind
+      );
+    }
   }
 
   /**
@@ -333,21 +417,20 @@ class DailyCallManager {
   addDeviceChangeListener(selector, deviceType) {
     selector.addEventListener('change', (e) => {
       const deviceId = e.target.value;
-      // Call setInputDevicesAsync with the corresponding device ID based on the type of selector.
-      if (deviceType === 'video') {
-        this.call.setInputDevicesAsync({ videoDeviceId: deviceId });
-      } else if (deviceType === 'audio') {
-        this.call.setInputDevicesAsync({ audioDeviceId: deviceId });
-      }
+      const deviceOptions = { [`${deviceType}DeviceId`]: deviceId };
+      this.call.setInputDevicesAsync(deviceOptions);
     });
   }
 
   /**
-   * Returns the number of participants in the call.
-   * @returns {number} The number of participants in the call.
+   * Updates the UI with the current number of participants.
+   * This method combines getting the participant count and updating the UI.
    */
-  getParticipantCount() {
-    return Object.keys(this.call.participants()).length;
+  updateAndDisplayParticipantCount() {
+    const participantCount = Object.keys(this.call.participants()).length;
+    document.getElementById(
+      'participant-count'
+    ).textContent = `Participants: ${participantCount}`;
   }
 
   /**

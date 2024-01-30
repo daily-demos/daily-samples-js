@@ -1,7 +1,16 @@
+/* General styling for the body - sets the base font and margins for the page */
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
 }
+
+/* Styles for controlling the layout and spacing of control buttons (e.g., 'Join', 'Leave', etc.) */
+.controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Container for holding all video elements. It uses Flexbox for a flexible and responsive layout */
 #videos {
   display: flex;
   flex-wrap: wrap;
@@ -9,13 +18,39 @@ body {
   justify-content: start;
 }
 
+/* Styles for individual video elements within the #videos container */
 #videos video {
   max-width: 500px;
   aspect-ratio: 16 / 9;
   width: 100%;
   object-fit: cover;
 }
-.controls {
-  margin-top: 10px;
-  margin-bottom: 10px;
+
+/* Styling for the outer container of each video, providing a uniform appearance and layout */
+.video-container {
+  position: relative;
+  display: inline-block;
+  background-color: lightgray;
+  padding: 0.5%; /* Adjusts size of video relatively */
+  margin: 5px;
+  aspect-ratio: 16 / 9;
+  width: 400px;
+}
+
+/* Styles for displaying the session ID as an overlay on the bottom left corner of the video */
+.session-id-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 5px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  font-size: 0.8em; /* Adjust based on your UI requirements */
+}
+
+/* Additional styling specifics for video elements, ensuring they fit well within their containers */
+.video-element {
+  width: 100%;
+  height: auto;
+  background-color: black;
 }
