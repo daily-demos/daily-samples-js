@@ -28,19 +28,27 @@ class DailyCallManager {
    * Configures event listeners for various call-related events.
    */
   async setupEventListeners() {
+    // Initial set of events with unique handlers
     const events = {
       'active-speaker-change': this.handleActiveSpeakerChange.bind(this),
       error: this.handleError.bind(this),
       'joined-meeting': this.handleJoin.bind(this),
       'left-meeting': this.handleLeave.bind(this),
-      'participant-joined': this.handleParticipantJoinLeft.bind(this),
-      'participant-left': this.handleParticipantJoinLeft.bind(this),
-      'participant-updated': this.handleParticipantStateUpdate.bind(this),
-      'track-started': this.displayTrack.bind(this),
-      'track-stopped': this.destroyTrack.bind(this),
     };
 
-    // Register the event handlers with the call object.
+    // Handling participant-* events with a single operation
+    const participantEvents = [
+      'participant-joined',
+      'participant-left',
+      'participant-updated',
+    ];
+
+    // Registering participant related events with the same handler
+    participantEvents.forEach((event) => {
+      events[event] = this.handleNewParticipantState.bind(this);
+    });
+
+    // Register the event handlers with the call object
     Object.entries(events).forEach(([event, handler]) => {
       this.call.on(event, handler);
     });
@@ -52,6 +60,7 @@ class DailyCallManager {
    * - Enables the toggle camera and mic buttons
    * - Gets the initial track states
    * - Sets up the device selectors
+   * - Initializes the camera and mic on/off states
    */
   handleJoin() {
     console.log(`Successfully joined: ${this.currentRoomUrl}`);
@@ -65,33 +74,8 @@ class DailyCallManager {
     // Set up the camera and mic selectors
     this.setupDeviceSelectors();
 
-    // Get the initial track states
-    this.getTrackStates();
-
-    // Update the participant count
-    this.updateAndDisplayParticipantCount();
-  }
-
-  /**
-   * Handler for remote participants joining and leaving. Updates the participant count.
-   */
-  handleParticipantJoinLeft(event) {
-    // Handle participant leaving
-    // Remove the remote participant's video container when they leave.
-    if (event.action === 'participant-left') {
-      const participantId = event.participant && event.participant.session_id;
-      if (participantId) {
-        const videoContainer = document.getElementById(
-          `video-container-${participantId}`
-        );
-        if (videoContainer) {
-          videoContainer.remove(); // Removes the video container from the DOM.
-        }
-      }
-    }
-
-    // Update the participant count
-    this.updateAndDisplayParticipantCount();
+    // Initialize the camera and microphone on/off states
+    this.updateUiForDevicesState();
   }
 
   /**
@@ -100,6 +84,7 @@ class DailyCallManager {
    * - Disable the toggle camera and mic buttons
    * - Resets the camera and mic selectors
    * - Updates the call state in the UI
+   * - Removes all video containers
    */
   handleLeave() {
     console.log('Successfully left the call');
@@ -145,6 +130,78 @@ class DailyCallManager {
   }
 
   /**
+   * Handles participant-joined, participant-updated, and participant-left events:
+   * - Updates the participant count
+   * - Adds or removes video and audio tracks for the participant based on the event and track state
+   * @param {Object} event - The participant-* event object.
+   */
+  handleNewParticipantState(event) {
+    // Update the participant count
+    this.updateAndDisplayParticipantCount();
+
+    // Get the audio and video tracks and participant ID from the participant-* events
+    const tracks = event.participant.tracks;
+    const participant = event.participant;
+    const participantId = participant.session_id;
+
+    if (event.action === 'participant-left') {
+      if (participant) {
+        // Remove the video container if it exists
+        const videoContainer = document.getElementById(
+          `video-container-${participantId}`
+        );
+        if (videoContainer) {
+          this.destroyTrack('video', participantId);
+          videoContainer.remove();
+        }
+
+        // Remove the audio element if it exists
+        const audioElement = document.getElementById(`audio-${participantId}`);
+        if (audioElement) {
+          this.destroyTrack('audio', participantId);
+        }
+      }
+    } else {
+      for (const trackType in tracks) {
+        if (tracks[trackType].state === 'playable') {
+          if (trackType === 'video') {
+            this.displayVideo(tracks[trackType], participantId);
+          } else if (trackType === 'audio') {
+            this.playAudio(tracks[trackType], participant);
+          } else {
+            // Actions for screenVideo and screenAudio tracks if needed.
+          }
+        } else if (
+          (tracks[trackType].state === 'off') |
+          'interrupted' |
+          'blocked'
+        ) {
+          if (trackType === 'audio' && participant.local) {
+            // Do nothing for local client's audio track.
+            return;
+          } else {
+            this.destroyTrack(trackType, participantId);
+          }
+        } else {
+          // Other states are 'loading' and 'sendable'.
+          // This is a placeholder for handling those states if needed.
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates the UI with the current active speaker's identity.
+   * @param {Object} event - The active speaker change event object.
+   */
+  handleActiveSpeakerChange(event) {
+    document.getElementById(
+      'active-speaker'
+    ).textContent = `Active Speaker: ${event.activeSpeaker.peerId}`;
+  }
+
+  /**
    * Tries to join a call with provided room URL and optional join token.
    * @param {string} roomUrl - The URL of the room to join.
    * @param {string|null} joinToken - An optional token for joining the room.
@@ -173,25 +230,13 @@ class DailyCallManager {
   }
 
   /**
-   * Decides whether to display video or play audio based on the track type.
-   * @param {Object} event - The track event object.
-   */
-  displayTrack(event) {
-    if (event.track.kind === 'video') {
-      this.displayVideo(event);
-    } else {
-      this.playAudio(event);
-    }
-  }
-
-  /**
    * Adds a <video> element to the DOM and attaches the video track to it.
    * Also displays the session ID of the participant as an overlay.
    * If the video track is stopped, keeps the placeholder.
-   * @param {Object} event - The track event object containing the video track.
+   * @param {Object} track - The video track object.
+   * @param {string} participantId - The ID of the participant.
    */
-  displayVideo(event) {
-    const participantId = event.participant.session_id;
+  displayVideo(track, participantId) {
     let videoContainer = document.getElementById(
       `video-container-${participantId}`
     );
@@ -211,7 +256,7 @@ class DailyCallManager {
     }
 
     // Check if event track is active or not
-    if (!event.track.enabled) {
+    if (!track.state === 'playable') {
       if (videoContainer.querySelector('video')) {
         // If the video track is disabled but video element exists, clean up
         videoContainer.querySelector('video').srcObject = null; // Free up media resources
@@ -229,95 +274,58 @@ class DailyCallManager {
     }
 
     videoEl.style.width = '100%'; // Ensure the video occupies the full container width
-    videoEl.srcObject = new MediaStream([event.track]);
+    videoEl.srcObject = new MediaStream([track.persistentTrack]);
     videoEl.play();
   }
 
   /**
    * Adds an <audio> element to the DOM and attaches the audio track to it.
-   * @param {Object} event - The track event object containing the audio track.
+   * @param {Object} track - The audio track object.
+   * @param {Object} participant - The track's participant object.
    */
-  playAudio(event) {
-    if (event.participant.local) {
+  playAudio(track, participant) {
+    if (participant.local) {
       return; // Avoid playing local audio
     }
-    const audioEl = document.createElement('audio'); // Create <audio> element
-    document.body.appendChild(audioEl); // Add <audio> element to DOM
-    audioEl.srcObject = new MediaStream([event.track]); // Attach audio track to <audio> element
-    audioEl.play(); // Play audio track
+    // Construct an element ID using the participant ID to uniquely identify audio elements
+    const audioElementId = `audio-${participant.session_id}`;
+    let audioEl = document.getElementById(audioElementId);
+
+    if (!audioEl) {
+      audioEl = document.createElement('audio'); // Create <audio> element if it doesn't exist
+      audioEl.id = audioElementId; // Assign the constructed ID
+      document.body.appendChild(audioEl); // Add <audio> element to DOM
+    }
+
+    // Whether newly created or existing, update the srcObject
+    audioEl.srcObject = new MediaStream([track.persistentTrack]);
+    audioEl.play();
   }
 
   /**
    * Removes a media element (audio or video) from the DOM for a specific participant
    * and ensures media resources are released by setting srcObject to null.
-   * @param {string} participantId - The ID of the participant.
-   * @param {string} trackKind - The kind of track ('video' or 'audio').
+   * @param {Object} trackKind - The kind of track ('video' or 'audio').
+   * @param {Object} participantId - The ID of the participant.
    */
-  removeMediaElement(participantId, trackKind) {
-    // Construct the selector based on the track kind
-    let elementSelector;
+  destroyTrack(trackKind, participantId) {
     if (trackKind === 'video') {
-      elementSelector = `#video-container-${participantId} video`;
+      const videoContainerSelector = `#video-container-${participantId}`;
+      const videoContainer = document.querySelector(videoContainerSelector);
+      if (videoContainer) {
+        const videoEl = videoContainer.querySelector('video');
+        if (videoEl) {
+          videoEl.srcObject = null; // Release media resources
+          videoContainer.removeChild(videoEl); // Remove the element from the DOM
+        }
+      }
     } else if (trackKind === 'audio') {
-      elementSelector = 'audio';
-    } else {
-      console.error('Unsupported track kind:', trackKind);
-      return;
-    }
-
-    const element = document.querySelector(elementSelector);
-    if (element) {
-      element.srcObject = null; // Release media resources
-      element.remove(); // Remove the element from the DOM
-    }
-  }
-
-  /**
-   * Adjusted destroyTrack method that calls removeMediaElement for each track.
-   * @param {Object} event - The track event object.
-   */
-  destroyTrack(event) {
-    const participantId = event.participant && event.participant.session_id;
-    // Ensure participantId exists for video tracks, or use a placeholder for audio
-    const effectiveParticipantId =
-      event.track.kind === 'video' ? participantId : 'localAudio';
-    if (effectiveParticipantId) {
-      this.removeMediaElement(effectiveParticipantId, event.track.kind);
-    } else {
-      console.error(
-        'Participant ID was not found for the track:',
-        event.track.kind
-      );
-    }
-  }
-
-  /**
-   * Updates UI for track state changes (e.g., mute states).
-   */
-  handleParticipantStateUpdate() {
-    this.getTrackStates();
-  }
-
-  /**
-   * Updates the UI with the current active speaker's identity.
-   * @param {Object} event - The active speaker change event object.
-   */
-  handleActiveSpeakerChange(event) {
-    document.getElementById(
-      'active-speaker'
-    ).textContent = `Active Speaker: ${event.activeSpeaker.peerId}`;
-  }
-
-  /**
-   * Retrieves the track states of the local participant's tracks and updates the UI.
-   */
-  getTrackStates() {
-    const localParticipant = this.call.participants().local;
-    const tracks = localParticipant.tracks;
-    if (this.call && localParticipant) {
-      this.isCameraMuted = tracks.video.state === 'off';
-      this.isMicMuted = tracks.audio.state === 'off';
-      this.updateUiForTrackStates();
+      const audioElementId = `audio-${participantId}`;
+      const audioElement = document.getElementById(audioElementId);
+      if (audioElement) {
+        audioElement.srcObject = null; // Release media resources
+        audioElement.remove(); // Remove the element from the DOM
+      }
     }
   }
 
@@ -327,7 +335,7 @@ class DailyCallManager {
   toggleCamera() {
     this.call.setLocalVideo(this.isCameraMuted);
     this.isCameraMuted = !this.isCameraMuted;
-    this.updateUiForTrackStates();
+    this.updateUiForDevicesState();
   }
 
   /**
@@ -336,13 +344,13 @@ class DailyCallManager {
   toggleMicrophone() {
     this.call.setLocalAudio(this.isMicMuted);
     this.isMicMuted = !this.isMicMuted;
-    this.updateUiForTrackStates();
+    this.updateUiForDevicesState();
   }
 
   /**
    * Updates the UI to reflect the current states of the local participant's camera and microphone.
    */
-  updateUiForTrackStates() {
+  updateUiForDevicesState() {
     document.getElementById('camera-state').textContent = `Camera: ${
       this.isCameraMuted ? 'Off' : 'On'
     }`;
