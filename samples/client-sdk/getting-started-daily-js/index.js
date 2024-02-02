@@ -6,7 +6,7 @@
  */
 class DailyCallManager {
   constructor() {
-    this.call = DailyIframe.createCallObject();
+    this.call = Daily.createCallObject();
     this.isCameraMuted = null;
     this.isMicMuted = null;
     this.currentRoomUrl = null;
@@ -193,12 +193,12 @@ class DailyCallManager {
       if (trackInfo.persistentTrack) {
         if (trackType === 'video') {
           // Attach and play the video
-          this.playVideo(trackInfo, participantId);
+          this.startOrUpdateVideo(trackInfo, participantId);
         } else if (trackType === 'audio') {
           // Check if participant is local here, avoiding playback of the local participant's audio
           if (!isLocal) {
             // Attach and play the audio
-            this.playAudio(trackInfo, participantId);
+            this.startOrUpdateAudio(trackInfo, participantId);
           }
         }
       } else {
@@ -280,7 +280,6 @@ class DailyCallManager {
 
     switch (track.state) {
       case 'playable':
-        videoContainer.style.display = '';
         videoEl.style.display = '';
         break;
       case 'off':
@@ -288,17 +287,36 @@ class DailyCallManager {
       case 'blocked':
         videoEl.style.display = 'none'; // Hide video but keep container
         break;
-      // Handle other specific states as needed
+      default:
+        // Here we handle all other states the same as we handle 'playable'.
+        // In your code, you may choose to handle them differently.
+        videoEl.style.display = '';
+        break;
     }
   }
 
   /**
-   * Attaches the video track to a video element for a participant and plays the track.
-   * Assumes the video container and element already exist.
-   * @param {Object} track - The video track object.
-   * @param {string} participantId - The ID of the participant.
+   *
+   * Creates or updates the video element for a participant to display their video stream.
+   * It either:
+   * - attaches a new MediaStreamTrack to the video element and plays it OR
+   * - checks if the video element already exists with a persistentTrack
+   *
+   * If the existing persistentTrack is different from the new one, it updates the srcObject
+   * with the new track and plays it. This ensures that the video element is efficiently managed,
+   * without unnecessary re-attachments or plays when the track has not changed.
+   *
+   * This framework is critical for handling dynamic video situations, such as when participants
+   * toggle their camera on or off, or when there is a track change due to some action within the call
+   * environment (e.g., switching devices).
+   *
+   * @param {Object} track - The video track data from the participant. This includes the actual
+   * MediaStreamTrack (`persistentTrack`) to be displayed in the video element.
+   * @param {string} participantId - The unique identifier for the participant whose video
+   * track is being handled. This ID is used to name and fetch specific video elements related
+   * to the participant in the DOM.
    */
-  playVideo(track, participantId) {
+  startOrUpdateVideo(track, participantId) {
     const videoContainer = document.getElementById(
       `video-container-${participantId}`
     );
@@ -310,6 +328,9 @@ class DailyCallManager {
     }
 
     let videoEl = videoContainer.querySelector('video.video-element');
+    // Keep track of whether we need to update the video source
+    let updateVideoSource = false;
+
     if (!videoEl) {
       console.error(
         `Video element does not exist for participant ${participantId}. Creating one.`
@@ -317,41 +338,81 @@ class DailyCallManager {
       videoEl = document.createElement('video');
       videoEl.className = 'video-element';
       videoContainer.appendChild(videoEl);
+      updateVideoSource = true; // Since the video element is newly created, we need to update its source
+    } else if (videoEl.srcObject) {
+      // If a video element already exists with a srcObject, check if the persistent track has changed.
+      const existingTracks = videoEl.srcObject.getTracks();
+      updateVideoSource = !existingTracks.includes(track.persistentTrack);
+    } else {
+      // If the video element exists but has no srcObject, we still need to update the source.
+      updateVideoSource = true;
     }
 
-    // Attach the track to the video element and play it
-    videoEl.srcObject = new MediaStream([track.persistentTrack]);
-    videoEl.onloadedmetadata = () => {
-      videoEl
-        .play()
-        .catch((e) =>
-          console.error(
-            `Error playing video for participant ${participantId}:`,
-            e
-          )
-        );
-    };
+    if (updateVideoSource) {
+      // If we determined that we need to update the video source, do so.
+      videoEl.srcObject = new MediaStream([track.persistentTrack]);
+      videoEl.onloadedmetadata = () => {
+        videoEl
+          .play()
+          .catch((e) =>
+            console.error(
+              `Error playing video for participant ${participantId}:`,
+              e
+            )
+          );
+      };
+    }
   }
 
   /**
-   * Adds an <audio> element to the DOM for a participant's audio track and attempts to play it.
-   * @param {Object} track - The audio track object.
-   * @param {Object} participant - The track's participant object.
+   *
+   * Creates or updates the audio element for a participant to play their audio stream.
+   * It either:
+   * - attaches a new MediaStreamTrack to the audio element and plays it OR
+   * - checks if the audio element already exists with a persistentTrack
+   *
+   * If the existing persistentTrack is different from the new one, it updates the srcObject
+   * with the new track and plays it. This ensures that the audio element is efficiently managed,
+   * without unnecessary re-attachments or plays when the track has not changed.
+   *
+   * @param {Object} track - The audio track data from the participant. Includes the track's
+   * MediaStreamTrack (`persistentTrack`) itself, which should be output through the audio element.
+   * @param {string} participantId - The unique identifier for the participant whose audio
+   * track is being handled. This ID is used to name and fetch specific audio elements related
+   * to the participant in the DOM.
    */
-  playAudio(track, participantId) {
-    // Construct an element ID using the participant ID to uniquely identify audio elements
+  startOrUpdateAudio(track, participantId) {
     const audioElementId = `audio-${participantId}`;
     let audioEl = document.getElementById(audioElementId);
+    // Keep track of whether we need to update the audio source
+    let updateAudioSource = false;
 
     if (!audioEl) {
       audioEl = document.createElement('audio');
       audioEl.id = audioElementId;
       document.body.appendChild(audioEl);
+      updateAudioSource = true; // Since the audio element is newly created, we need to update its source
+    } else if (audioEl.srcObject) {
+      // If an audio element already exists with a srcObject, check if the persistent track has changed.
+      const existingTracks = audioEl.srcObject.getTracks();
+      updateAudioSource = !existingTracks.includes(track.persistentTrack);
+    } else {
+      // If the audio element exists but has no srcObject, we still need to update the source.
+      updateAudioSource = true;
     }
 
-    // Whether newly created or existing, update the srcObject and play()
-    audioEl.srcObject = new MediaStream([track.persistentTrack]);
-    audioEl.play();
+    if (updateAudioSource) {
+      // If we determined that we need to update the audio source, do so.
+      audioEl.srcObject = new MediaStream([track.persistentTrack]);
+      audioEl
+        .play()
+        .catch((e) =>
+          console.error(
+            `Error playing audio for participant ${participantId}:`,
+            e
+          )
+        );
+    }
   }
 
   /**
