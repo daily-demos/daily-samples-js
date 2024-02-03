@@ -145,7 +145,7 @@ class DailyCallManager {
    * Handles participant-left event:
    * - Cleans up the video and audio tracks for the participant
    * - Removes the related UI elements
-   * @param {Object} event - The participant-* event object.
+   * @param {Object} event - The participant-left event object.
    */
   handleParticipantLeft(event) {
     const participantId = event.participant.session_id;
@@ -164,7 +164,8 @@ class DailyCallManager {
    * - Creates an audio element for new participants
    * - Manages video and audio tracks based on their current state
    * - Updates device states for the local participant
-   * @param {Object} event - The participant-* event object.
+   * @param {Object} event - The participant-joined, participant-updated
+   * event object.
    */
   handleParticipantJoinedOrUpdated(event) {
     const { participant } = event;
@@ -249,28 +250,44 @@ class DailyCallManager {
     }
   }
 
+  /**
+   * Creates and sets up a new video container for a specific participant. This function dynamically
+   * generates a video element along with a container and an overlay displaying the participant's ID.
+   * The newly created elements are appended to a designated parent in the DOM, preparing them for video
+   * streaming or playback related to the specified participant.
+   *
+   * @param {string} participantId - The unique identifier for the participant.
+   */
   createVideoContainer(participantId) {
     // Create a video container for the participant
-    let videoContainer = document.createElement('div');
+    const videoContainer = document.createElement('div');
     videoContainer.id = `video-container-${participantId}`;
     videoContainer.className = 'video-container';
     document.getElementById('videos').appendChild(videoContainer);
 
     // Add an overlay to display the participant's session ID
-    let sessionIdOverlay = document.createElement('div');
+    const sessionIdOverlay = document.createElement('div');
     sessionIdOverlay.className = 'session-id-overlay';
     sessionIdOverlay.textContent = participantId;
     videoContainer.appendChild(sessionIdOverlay);
 
     // Create a video element for the participant
-    let videoEl = document.createElement('video');
+    const videoEl = document.createElement('video');
     videoEl.className = 'video-element';
     videoContainer.appendChild(videoEl);
   }
 
+  /**
+   * Creates an audio element for a particular participant. This function is responsible for dynamically
+   * generating a standalone audio element that can be used to play audio streams associated with the
+   * specified participant. The audio element is appended directly to the document body or a relevant
+   * container, thereby preparing it for playback of the participant's audio.
+   *
+   * @param {string} participantId - A unique identifier corresponding to the participant.
+   */
   createAudioElement(participantId) {
     // Create an audio element for the participant
-    let audioEl = document.createElement('audio');
+    const audioEl = document.createElement('audio');
     audioEl.id = `audio-${participantId}`;
     document.body.appendChild(audioEl);
   }
@@ -285,8 +302,7 @@ class DailyCallManager {
    * @param {Object} track - Contains the media track data, including the `persistentTrack`
    * property which holds the actual MediaStreamTrack to be played or updated.
    * @param {string} participantId - Identifies the participant whose media track is being
-   * updated. This ID is used to construct a selector for finding the specific media element
-   * in the DOM.
+   * updated.
    */
   startOrUpdateTrack(trackType, track, participantId) {
     // Construct the selector string or ID based on the trackType.
@@ -418,73 +434,59 @@ class DailyCallManager {
   }
 
   /**
-   * Sets up device selectors for cameras and microphones by populating
-   * them with available devices and listening for changes in selection.
+   * Sets up device selectors for cameras and microphones by dynamically populating them
+   * with available devices and attaching event listeners to handle device selection changes.
    */
   async setupDeviceSelectors() {
-    // Fetch current input devices settings.
+    // Fetch current input devices settings and an array of available devices.
     const selectedDevices = await this.call.getInputDevices();
-    // Destructure to extract deviceId for camera and mic
-    const currentCameraDeviceId = selectedDevices.camera.deviceId;
-    const currentMicDeviceId = selectedDevices.mic.deviceId;
-
-    // Fetch an array of device information objects representing
-    // the media input devices available on the system.
     const { devices } = await this.call.enumerateDevices();
 
-    const cameraSelector = document.getElementById('camera-selector');
-    const micSelector = document.getElementById('mic-selector');
+    // Element references for camera and microphone selectors.
+    const selectors = {
+      videoinput: document.getElementById('camera-selector'),
+      audioinput: document.getElementById('mic-selector'),
+    };
 
-    // Clear existing options in both selectors to prepare for fresh population.
-    cameraSelector.innerHTML = '';
-    micSelector.innerHTML = '';
+    // Prepare selectors by clearing existing options and adding a non-selectable prompt.
+    Object.values(selectors).forEach((selector) => {
+      selector.innerHTML = '';
+      const promptOption = new Option(
+        `Select a ${selector.id.includes('camera') ? 'camera' : 'microphone'}`,
+        '',
+        true,
+        true
+      );
+      promptOption.disabled = true;
+      selector.appendChild(promptOption);
+    });
 
-    // Add non-selectable prompt options to each dropdown as the first option.
-    const cameraPromptOption = new Option('Select a camera', '', true, true);
-    cameraPromptOption.disabled = true;
-    cameraSelector.appendChild(cameraPromptOption);
-
-    const micPromptOption = new Option('Select a microphone', '', true, true);
-    micPromptOption.disabled = true;
-    micSelector.appendChild(micPromptOption);
-
-    // Populate the selectors and set currently selected devices as selected
+    // Create and append options to the selectors based on available devices.
     devices.forEach((device) => {
-      if (device.label) {
-        const option = new Option(device.label, device.deviceId);
-
-        if (device.kind === 'videoinput') {
-          cameraSelector.appendChild(option);
-          if (device.deviceId === currentCameraDeviceId) {
-            option.selected = true;
-          }
-        } else if (device.kind === 'audioinput') {
-          micSelector.appendChild(option);
-          if (device.deviceId === currentMicDeviceId) {
-            option.selected = true;
-          }
-        }
+      if (device.label && selectors[device.kind]) {
+        const isSelected =
+          selectedDevices[device.kind === 'videoinput' ? 'camera' : 'mic']
+            .deviceId === device.deviceId;
+        const option = new Option(
+          device.label,
+          device.deviceId,
+          isSelected,
+          isSelected
+        );
+        selectors[device.kind].appendChild(option);
       }
     });
 
-    // Attach event listeners to the selectors to handle device changes.
-    this.addDeviceChangeListener(cameraSelector, 'video');
-    this.addDeviceChangeListener(micSelector, 'audio');
-  }
-
-  /**
-   * Attaches a change event listener to a device selector.
-   * This listener updates the currently selected device
-   * for video or audio based on user selection.
-   *
-   * @param {HTMLElement} selector - The <select> element for choosing a device.
-   * @param {string} deviceType - The type of device, either 'video' for cameras or 'audio' for microphones.
-   */
-  addDeviceChangeListener(selector, deviceType) {
-    selector.addEventListener('change', (e) => {
-      const deviceId = e.target.value;
-      const deviceOptions = { [`${deviceType}DeviceId`]: deviceId };
-      this.call.setInputDevicesAsync(deviceOptions);
+    //Attach event listeners for device changes.
+    Object.entries(selectors).forEach(([deviceKind, selector]) => {
+      selector.addEventListener('change', async (e) => {
+        const deviceId = e.target.value;
+        const deviceOptions = {
+          [deviceKind === 'videoinput' ? 'videoDeviceId' : 'audioDeviceId']:
+            deviceId,
+        };
+        await this.call.setInputDevicesAsync(deviceOptions);
+      });
     });
   }
 
