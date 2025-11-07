@@ -20,11 +20,11 @@ class DailyCallManager {
   async initialize() {
     this.setupEventListeners();
     document
-      .getElementById("toggle-camera")
-      .addEventListener("click", () => this.toggleCamera());
+      .getElementById('toggle-camera')
+      .addEventListener('click', () => this.toggleCamera());
     document
-      .getElementById("toggle-mic")
-      .addEventListener("click", () => this.toggleMicrophone());
+      .getElementById('toggle-mic')
+      .addEventListener('click', () => this.toggleMicrophone());
   }
 
   /**
@@ -32,13 +32,13 @@ class DailyCallManager {
    */
   setupEventListeners() {
     const events = {
-      "active-speaker-change": this.handleActiveSpeakerChange.bind(this),
+      'active-speaker-change': this.handleActiveSpeakerChange.bind(this),
       error: this.handleError.bind(this),
-      "joined-meeting": this.handleJoin.bind(this),
-      "left-meeting": this.handleLeave.bind(this),
-      "participant-joined": this.handleParticipantJoinedOrUpdated.bind(this),
-      "participant-left": this.handleParticipantLeft.bind(this),
-      "participant-updated": this.handleParticipantJoinedOrUpdated.bind(this),
+      'joined-meeting': this.handleJoin.bind(this),
+      'left-meeting': this.handleLeave.bind(this),
+      'participant-joined': this.handleParticipantJoinedOrUpdated.bind(this),
+      'participant-left': this.handleParticipantLeft.bind(this),
+      'participant-updated': this.handleParticipantJoinedOrUpdated.bind(this),
     };
 
     Object.entries(events).forEach(([event, handler]) => {
@@ -63,13 +63,13 @@ class DailyCallManager {
     this.updateAndDisplayParticipantCount();
 
     // Enable the leave button
-    document.getElementById("leave-btn").disabled = false;
+    document.getElementById('leave-btn').disabled = false;
 
     // Enable the toggle camera and mic buttons and selectors
-    document.getElementById("toggle-camera").disabled = false;
-    document.getElementById("toggle-mic").disabled = false;
-    document.getElementById("camera-selector").disabled = false;
-    document.getElementById("mic-selector").disabled = false;
+    document.getElementById('toggle-camera').disabled = false;
+    document.getElementById('toggle-mic').disabled = false;
+    document.getElementById('camera-selector').disabled = false;
+    document.getElementById('mic-selector').disabled = false;
 
     // Set up the camera and mic selectors
     this.setupDeviceSelectors();
@@ -90,36 +90,36 @@ class DailyCallManager {
    * - Removes all video containers
    */
   handleLeave() {
-    console.log("Successfully left the call");
+    console.log('Successfully left the call');
 
     // Update the join and leave button states
-    document.getElementById("leave-btn").disabled = true;
-    document.getElementById("join-btn").disabled = false;
+    document.getElementById('leave-btn').disabled = true;
+    document.getElementById('join-btn').disabled = false;
 
     // Disable the toggle camera and mic buttons
-    document.getElementById("toggle-camera").disabled = true;
-    document.getElementById("toggle-mic").disabled = true;
+    document.getElementById('toggle-camera').disabled = true;
+    document.getElementById('toggle-mic').disabled = true;
 
     // Reset and disable the camera and mic selectors
-    const cameraSelector = document.getElementById("camera-selector");
-    const micSelector = document.getElementById("mic-selector");
+    const cameraSelector = document.getElementById('camera-selector');
+    const micSelector = document.getElementById('mic-selector');
     cameraSelector.selectedIndex = 0;
     micSelector.selectedIndex = 0;
     cameraSelector.disabled = true;
     micSelector.disabled = true;
 
     // Update the call state in the UI
-    document.getElementById("camera-state").textContent = "Camera: Off";
-    document.getElementById("mic-state").textContent = "Mic: Off";
+    document.getElementById('camera-state').textContent = 'Camera: Off';
+    document.getElementById('mic-state').textContent = 'Mic: Off';
     document.getElementById(
-      "participant-count"
+      'participant-count'
     ).textContent = `Participants: 0`;
     document.getElementById(
-      "active-speaker"
+      'active-speaker'
     ).textContent = `Active Speaker: None`;
 
     // Remove all video containers
-    const videosDiv = document.getElementById("videos");
+    const videosDiv = document.getElementById('videos');
     while (videosDiv.firstChild) {
       videosDiv.removeChild(videosDiv.firstChild);
     }
@@ -133,7 +133,7 @@ class DailyCallManager {
    * @param {Object} e - The error event object.
    */
   handleError(e) {
-    console.error("DAILY SENT AN ERROR!", e.error ? e.error : e.errorMsg);
+    console.error('DAILY SENT AN ERROR!', e.error ? e.error : e.errorMsg);
   }
 
   /**
@@ -149,8 +149,8 @@ class DailyCallManager {
     // When a participant leaves, we don't have trackInfo, but we know these are regular tracks
     this.destroyTracks(
       [
-        { trackType: "video", trackInfo: null },
-        { trackType: "audio", trackInfo: null },
+        { trackType: 'video', trackInfo: null },
+        { trackType: 'audio', trackInfo: null },
       ],
       participantId
     );
@@ -202,7 +202,7 @@ class DailyCallManager {
         const isCustomTrack = trackInfo.kind;
 
         // For custom audio tracks, create a dedicated audio element if it doesn't exist
-        if (isCustomTrack && trackInfo.kind === "audio" && !isLocal) {
+        if (isCustomTrack && trackInfo.kind === 'audio' && !isLocal) {
           const customAudioId = `${trackType}-${participantId}`;
           if (!document.getElementById(customAudioId)) {
             this.createCustomAudioElement(trackType, participantId);
@@ -210,7 +210,7 @@ class DailyCallManager {
         }
 
         // For custom video tracks, create a dedicated video container if it doesn't exist
-        if (isCustomTrack && trackInfo.kind === "video") {
+        if (isCustomTrack && trackInfo.kind === 'video') {
           const customVideoId = `video-container-${trackType}-${participantId}`;
           if (!document.getElementById(customVideoId)) {
             this.createCustomVideoContainer(trackType, participantId);
@@ -220,7 +220,7 @@ class DailyCallManager {
         // Check if this is the local participant's audio track.
         // If so, we will skip playing it, as it's already being played.
         // We'll start or update tracks in all other cases.
-        if (!(isLocal && trackType === "audio")) {
+        if (!(isLocal && trackType === 'audio')) {
           this.startOrUpdateTrack(trackType, trackInfo, participantId);
         }
       } else {
@@ -230,7 +230,7 @@ class DailyCallManager {
 
       // Update the video UI based on the track's state
       // For regular and custom video tracks
-      if (trackType === "video" || trackInfo.kind === "video") {
+      if (trackType === 'video' || trackInfo.kind === 'video') {
         this.updateVideoUi(trackInfo, participantId, trackType);
       }
 
@@ -248,7 +248,7 @@ class DailyCallManager {
    */
   handleActiveSpeakerChange(event) {
     document.getElementById(
-      "active-speaker"
+      'active-speaker'
     ).textContent = `Active Speaker: ${event.activeSpeaker.peerId}`;
   }
 
@@ -259,7 +259,7 @@ class DailyCallManager {
    */
   async joinRoom(roomUrl, joinToken = null) {
     if (!roomUrl) {
-      console.error("Room URL is required to join a room.");
+      console.error('Room URL is required to join a room.');
       return;
     }
 
@@ -268,18 +268,18 @@ class DailyCallManager {
     const joinOptions = { url: roomUrl };
     if (joinToken) {
       joinOptions.token = joinToken;
-      console.log("Joining with a token.");
+      console.log('Joining with a token.');
     } else {
-      console.log("Joining without a token.");
+      console.log('Joining without a token.');
     }
 
     try {
       // Disable the join button to prevent multiple attempts to join
-      document.getElementById("join-btn").disabled = true;
+      document.getElementById('join-btn').disabled = true;
       // Join the room
       await this.call.join(joinOptions);
     } catch (e) {
-      console.error("Join failed:", e);
+      console.error('Join failed:', e);
     }
   }
 
@@ -294,20 +294,20 @@ class DailyCallManager {
    */
   createVideoContainer(participantId) {
     // Create a video container for the participant
-    const videoContainer = document.createElement("div");
+    const videoContainer = document.createElement('div');
     videoContainer.id = `video-container-${participantId}`;
-    videoContainer.className = "video-container";
-    document.getElementById("videos").appendChild(videoContainer);
+    videoContainer.className = 'video-container';
+    document.getElementById('videos').appendChild(videoContainer);
 
     // Add an overlay to display the participant's session ID
-    const sessionIdOverlay = document.createElement("div");
-    sessionIdOverlay.className = "session-id-overlay";
+    const sessionIdOverlay = document.createElement('div');
+    sessionIdOverlay.className = 'session-id-overlay';
     sessionIdOverlay.textContent = participantId;
     videoContainer.appendChild(sessionIdOverlay);
 
     // Create a video element for the participant
-    const videoEl = document.createElement("video");
-    videoEl.className = "video-element";
+    const videoEl = document.createElement('video');
+    videoEl.className = 'video-element';
     videoContainer.appendChild(videoEl);
   }
 
@@ -322,7 +322,7 @@ class DailyCallManager {
    */
   createAudioElement(participantId) {
     // Create an audio element for the participant
-    const audioEl = document.createElement("audio");
+    const audioEl = document.createElement('audio');
     audioEl.id = `audio-${participantId}`;
     document.body.appendChild(audioEl);
   }
@@ -337,7 +337,7 @@ class DailyCallManager {
    */
   createCustomAudioElement(trackType, participantId) {
     // Create a custom audio element for the participant
-    const audioEl = document.createElement("audio");
+    const audioEl = document.createElement('audio');
     audioEl.id = `${trackType}-${participantId}`;
     audioEl.autoplay = true;
     document.body.appendChild(audioEl);
@@ -353,21 +353,21 @@ class DailyCallManager {
    */
   createCustomVideoContainer(trackType, participantId) {
     // Create a video container for the custom video track
-    const videoContainer = document.createElement("div");
+    const videoContainer = document.createElement('div');
     videoContainer.id = `video-container-${trackType}-${participantId}`;
-    videoContainer.className = "video-container";
-    document.getElementById("videos").appendChild(videoContainer);
+    videoContainer.className = 'video-container';
+    document.getElementById('videos').appendChild(videoContainer);
 
     // Add an overlay to display the track name and participant's session ID
-    const sessionIdOverlay = document.createElement("div");
-    sessionIdOverlay.className = "session-id-overlay";
-    const trackName = trackType.replace("customVideo", "");
+    const sessionIdOverlay = document.createElement('div');
+    sessionIdOverlay.className = 'session-id-overlay';
+    const trackName = trackType.replace('customVideo', '');
     sessionIdOverlay.textContent = `${trackName} (${participantId})`;
     videoContainer.appendChild(sessionIdOverlay);
 
     // Create a video element for the custom video track
-    const videoEl = document.createElement("video");
-    videoEl.className = "video-element";
+    const videoEl = document.createElement('video');
+    videoEl.className = 'video-element';
     videoEl.autoplay = true;
     videoEl.muted = true;
     videoEl.playsInline = true;
@@ -394,15 +394,15 @@ class DailyCallManager {
     // For custom audio and video tracks, we'll use a unique ID based on the track type
     let selector;
     console.log(
-      "Starting or updating track:",
+      'Starting or updating track:',
       trackType,
-      "for participant:",
+      'for participant:',
       participantId,
       track
     );
     const isCustomTrack = track.kind;
-    const isCustomAudio = isCustomTrack && track.kind === "audio";
-    const isCustomVideo = isCustomTrack && track.kind === "video";
+    const isCustomAudio = isCustomTrack && track.kind === 'audio';
+    const isCustomVideo = isCustomTrack && track.kind === 'video';
 
     if (isCustomAudio) {
       // Custom audio tracks get their own dedicated audio element
@@ -410,8 +410,8 @@ class DailyCallManager {
     } else if (isCustomVideo) {
       // Custom video tracks get their own dedicated video element in a custom container
       selector = `#video-container-${trackType}-${participantId} video.video-element`;
-      console.log("Custom video selector:", selector);
-    } else if (trackType === "video") {
+      console.log('Custom video selector:', selector);
+    } else if (trackType === 'video') {
       selector = `#video-container-${participantId} video.video-element`;
     } else {
       // Regular audio track
@@ -420,7 +420,7 @@ class DailyCallManager {
 
     // Retrieve the specific media element from the DOM.
     const trackEl =
-      trackType === "video" || isCustomVideo
+      trackType === 'video' || isCustomVideo
         ? document.querySelector(selector)
         : document.getElementById(selector);
 
@@ -474,9 +474,9 @@ class DailyCallManager {
    * @param {string} participantId - The ID of the participant.
    * @param {string} trackType - The type of track (e.g., 'video', 'customVideo-mytrack').
    */
-  updateVideoUi(track, participantId, trackType = "video") {
+  updateVideoUi(track, participantId, trackType = 'video') {
     // Determine the correct container ID based on track type
-    const isCustomVideo = track.customTrack && track.kind === "video";
+    const isCustomVideo = track.customTrack && track.kind === 'video';
     const containerId = isCustomVideo
       ? `video-container-${trackType}-${participantId}`
       : `video-container-${participantId}`;
@@ -487,23 +487,23 @@ class DailyCallManager {
       return;
     }
 
-    const videoEl = videoContainer.querySelector("video.video-element");
+    const videoEl = videoContainer.querySelector('video.video-element');
     if (!videoEl) {
       console.error(`Video element not found in container ${containerId}`);
       return;
     }
 
     switch (track.state) {
-      case "off":
-      case "interrupted":
-      case "blocked":
-        videoEl.style.display = "none"; // Hide video but keep container
+      case 'off':
+      case 'interrupted':
+      case 'blocked':
+        videoEl.style.display = 'none'; // Hide video but keep container
         break;
-      case "playable":
+      case 'playable':
       default:
         // Here we handle all other states the same as we handle 'playable'.
         // In your code, you may choose to handle them differently.
-        videoEl.style.display = "";
+        videoEl.style.display = '';
         break;
     }
   }
@@ -523,10 +523,10 @@ class DailyCallManager {
       const isCustomTrack = trackInfo && trackInfo.kind;
 
       // Determine the correct element ID based on track type
-      if (isCustomTrack && trackInfo.kind === "audio") {
+      if (isCustomTrack && trackInfo.kind === 'audio') {
         // Custom audio tracks have dedicated audio elements
         elementId = `${trackType}-${participantId}`;
-      } else if (isCustomTrack && trackInfo.kind === "video") {
+      } else if (isCustomTrack && trackInfo.kind === 'video') {
         // Custom video tracks have dedicated video containers
         elementId = `video-container-${trackType}-${participantId}`;
       } else {
@@ -537,9 +537,9 @@ class DailyCallManager {
       const element = document.getElementById(elementId);
       if (element) {
         // For video containers, clean up the video element inside
-        const isCustomVideo = isCustomTrack && trackInfo.kind === "video";
-        if (trackType === "video" || isCustomVideo) {
-          const videoEl = element.querySelector("video.video-element");
+        const isCustomVideo = isCustomTrack && trackInfo.kind === 'video';
+        if (trackType === 'video' || isCustomVideo) {
+          const videoEl = element.querySelector('video.video-element');
           if (videoEl) {
             videoEl.srcObject = null;
           }
@@ -577,32 +577,32 @@ class DailyCallManager {
     const isCustomTrack = trackInfo && trackInfo.kind;
 
     // For video, set the camera state
-    if (trackType === "video") {
-      document.getElementById("camera-state").textContent = `Camera: ${
-        this.call.localVideo() ? "On" : "Off"
+    if (trackType === 'video') {
+      document.getElementById('camera-state').textContent = `Camera: ${
+        this.call.localVideo() ? 'On' : 'Off'
       }`;
-    } else if (trackType === "audio") {
+    } else if (trackType === 'audio') {
       // For audio, set the mic state
-      document.getElementById("mic-state").textContent = `Mic: ${
-        this.call.localAudio() ? "On" : "Off"
+      document.getElementById('mic-state').textContent = `Mic: ${
+        this.call.localAudio() ? 'On' : 'Off'
       }`;
-    } else if (isCustomTrack && trackInfo.kind === "audio") {
+    } else if (isCustomTrack && trackInfo.kind === 'audio') {
       // For custom audio tracks, update UI to show custom track name
       // Extract track name from trackType (format: customAudio-name)
-      const trackName = trackType.replace("customAudio-", "");
+      const trackName = trackType.replace('customAudio-', '');
       document.getElementById(
-        "mic-state"
+        'mic-state'
       ).textContent = `Custom Audio (${trackName}): ${
-        trackInfo.state === "playable" ? "On" : "Off"
+        trackInfo.state === 'playable' ? 'On' : 'Off'
       }`;
-    } else if (isCustomTrack && trackInfo.kind === "video") {
+    } else if (isCustomTrack && trackInfo.kind === 'video') {
       // For custom video tracks, update UI to show custom track name
       // Extract track name from trackType (format: customVideo-name)
-      const trackName = trackType.replace("customVideo-", "");
+      const trackName = trackType.replace('customVideo-', '');
       document.getElementById(
-        "camera-state"
+        'camera-state'
       ).textContent = `Custom Video (${trackName}): ${
-        trackInfo.state === "playable" ? "On" : "Off"
+        trackInfo.state === 'playable' ? 'On' : 'Off'
       }`;
     }
   }
@@ -619,17 +619,17 @@ class DailyCallManager {
 
     // Element references for camera and microphone selectors.
     const selectors = {
-      videoinput: document.getElementById("camera-selector"),
-      audioinput: document.getElementById("mic-selector"),
+      videoinput: document.getElementById('camera-selector'),
+      audioinput: document.getElementById('mic-selector'),
     };
 
     // Prepare selectors by clearing existing options and adding a
     // non-selectable prompt.
     Object.values(selectors).forEach((selector) => {
-      selector.innerHTML = "";
+      selector.innerHTML = '';
       const promptOption = new Option(
-        `Select a ${selector.id.includes("camera") ? "camera" : "microphone"}`,
-        "",
+        `Select a ${selector.id.includes('camera') ? 'camera' : 'microphone'}`,
+        '',
         true,
         true
       );
@@ -641,7 +641,7 @@ class DailyCallManager {
     allDevices.forEach((device) => {
       if (device.label && selectors[device.kind]) {
         const isSelected =
-          selectedDevices[device.kind === "videoinput" ? "camera" : "mic"]
+          selectedDevices[device.kind === 'videoinput' ? 'camera' : 'mic']
             .deviceId === device.deviceId;
         const option = new Option(
           device.label,
@@ -655,10 +655,10 @@ class DailyCallManager {
 
     // Listen for user device change requests.
     Object.entries(selectors).forEach(([deviceKind, selector]) => {
-      selector.addEventListener("change", async (e) => {
+      selector.addEventListener('change', async (e) => {
         const deviceId = e.target.value;
         const deviceOptions = {
-          [deviceKind === "videoinput" ? "videoDeviceId" : "audioDeviceId"]:
+          [deviceKind === 'videoinput' ? 'videoDeviceId' : 'audioDeviceId']:
             deviceId,
         };
         await this.call.setInputDevicesAsync(deviceOptions);
@@ -675,7 +675,7 @@ class DailyCallManager {
       this.call.participantCounts().present +
       this.call.participantCounts().hidden;
     document.getElementById(
-      "participant-count"
+      'participant-count'
     ).textContent = `Participants: ${participantCount}`;
   }
 
@@ -686,12 +686,12 @@ class DailyCallManager {
   async leave() {
     try {
       await this.call.leave();
-      document.querySelectorAll("#videos video, audio").forEach((el) => {
+      document.querySelectorAll('#videos video, audio').forEach((el) => {
         el.srcObject = null; // Release media resources
         el.remove(); // Remove the element from the DOM
       });
     } catch (e) {
-      console.error("Leaving failed", e);
+      console.error('Leaving failed', e);
     }
   }
 }
@@ -700,19 +700,19 @@ class DailyCallManager {
  * Main entry point: Setup and event listener bindings after the DOM is fully
  * loaded.
  */
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const dailyCallManager = new DailyCallManager();
 
   // Bind the join call action to the join button.
-  document.getElementById("join-btn").addEventListener("click", async () => {
-    const roomUrl = document.getElementById("room-url").value.trim();
+  document.getElementById('join-btn').addEventListener('click', async () => {
+    const roomUrl = document.getElementById('room-url').value.trim();
     const joinToken =
-      document.getElementById("join-token").value.trim() || null;
+      document.getElementById('join-token').value.trim() || null;
     await dailyCallManager.joinRoom(roomUrl, joinToken);
   });
 
   // Bind the leave call action to the leave button.
-  document.getElementById("leave-btn").addEventListener("click", () => {
+  document.getElementById('leave-btn').addEventListener('click', () => {
     dailyCallManager.leave();
   });
 });
