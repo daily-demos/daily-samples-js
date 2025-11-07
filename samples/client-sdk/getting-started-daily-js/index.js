@@ -6,7 +6,10 @@
  */
 class DailyCallManager {
   constructor() {
-    this.call = Daily.createCallObject();
+    this.call = Daily.createCallObject({
+      subscribeToTracksAutomatically: false,
+    });
+    window.callObject = this.call; // Expose for debugging
     this.currentRoomUrl = null;
     this.initialize();
   }
@@ -52,7 +55,7 @@ class DailyCallManager {
    * @param {Object} event - The joined-meeting event object.
    */
   handleJoin(event) {
-    const tracks = event.participants.local.tracks;
+    const { tracks } = event.participants.local;
 
     console.log(`Successfully joined: ${this.currentRoomUrl}`);
 
@@ -143,10 +146,20 @@ class DailyCallManager {
     const participantId = event.participant.session_id;
 
     // Clean up the video and audio tracks for the participant
-    this.destroyTracks(['video', 'audio'], participantId);
+    // When a participant leaves, we don't have trackInfo, but we know these are regular tracks
+    this.destroyTracks(
+      [
+        { trackType: 'video', trackInfo: null },
+        { trackType: 'audio', trackInfo: null },
+      ],
+      participantId
+    );
 
     // Now, remove the related video UI
     document.getElementById(`video-container-${participantId}`)?.remove();
+    document
+      .getElementById(`video-container-customTrack-${participantId}`)
+      ?.remove();
 
     // Update the participant count
     this.updateAndDisplayParticipantCount();
@@ -166,7 +179,11 @@ class DailyCallManager {
     const { participant } = event;
     const participantId = participant.session_id;
     const isLocal = participant.local;
-    const tracks = participant.tracks;
+    const { tracks } = participant;
+
+    this.call.updateParticipant(participantId, {
+      setSubscribedTracks: true,
+    });
 
     // Always update the participant count regardless of the event action
     this.updateAndDisplayParticipantCount();
@@ -184,6 +201,22 @@ class DailyCallManager {
     Object.entries(tracks).forEach(([trackType, trackInfo]) => {
       // If a persistentTrack exists...
       if (trackInfo.persistentTrack) {
+        // For custom audio tracks, create a dedicated audio element if it doesn't exist
+        if (trackInfo?.kind === 'audio' && !isLocal) {
+          const customAudioId = `${trackType}-${participantId}`;
+          if (!document.getElementById(customAudioId)) {
+            this.createCustomAudioElement(trackType, participantId);
+          }
+        }
+
+        // For custom video tracks, create a dedicated video container if it doesn't exist
+        if (trackInfo?.kind === 'video') {
+          const customVideoId = `video-container-${trackType}-${participantId}`;
+          if (!document.getElementById(customVideoId)) {
+            this.createCustomVideoContainer(trackType, participantId);
+          }
+        }
+
         // Check if this is the local participant's audio track.
         // If so, we will skip playing it, as it's already being played.
         // We'll start or update tracks in all other cases.
@@ -192,12 +225,13 @@ class DailyCallManager {
         }
       } else {
         // If the track is not available, remove the media element
-        this.destroyTracks([trackType], participantId);
+        this.destroyTracks([{ trackType, trackInfo }], participantId);
       }
 
       // Update the video UI based on the track's state
-      if (trackType === 'video') {
-        this.updateVideoUi(trackInfo, participantId);
+      // For regular and custom video tracks
+      if (trackType === 'video' || trackInfo?.kind === 'video') {
+        this.updateVideoUi(trackInfo, participantId, trackType);
       }
 
       // Update the camera and microphone states for the local user based on
@@ -294,6 +328,53 @@ class DailyCallManager {
   }
 
   /**
+   * Creates a custom audio element for a particular participant and track type.
+   * This function is responsible for dynamically generating a standalone audio element
+   * that can be used to play custom audio streams associated with the specified participant.
+   *
+   * @param {string} trackType - The custom audio track type (e.g., 'customAudio-mytrack').
+   * @param {string} participantId - A unique identifier corresponding to the participant.
+   */
+  createCustomAudioElement(trackType, participantId) {
+    // Create a custom audio element for the participant
+    const audioEl = document.createElement('audio');
+    audioEl.id = `${trackType}-${participantId}`;
+    audioEl.autoplay = true;
+    document.body.appendChild(audioEl);
+  }
+
+  /**
+   * Creates a custom video container for a particular participant and track type.
+   * This function dynamically generates a video element with a container and overlay
+   * for custom video tracks.
+   *
+   * @param {string} trackType - The custom video track type (e.g., 'customVideo-mytrack').
+   * @param {string} participantId - A unique identifier corresponding to the participant.
+   */
+  createCustomVideoContainer(trackType, participantId) {
+    // Create a video container for the custom video track
+    const videoContainer = document.createElement('div');
+    videoContainer.id = `video-container-${trackType}-${participantId}`;
+    videoContainer.className = 'video-container';
+    document.getElementById('videos').appendChild(videoContainer);
+
+    // Add an overlay to display the track name and participant's session ID
+    const sessionIdOverlay = document.createElement('div');
+    sessionIdOverlay.className = 'session-id-overlay';
+    const trackName = trackType.replace('customVideo', '');
+    sessionIdOverlay.textContent = `${trackName} (${participantId})`;
+    videoContainer.appendChild(sessionIdOverlay);
+
+    // Create a video element for the custom video track
+    const videoEl = document.createElement('video');
+    videoEl.className = 'video-element';
+    videoEl.autoplay = true;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoContainer.appendChild(videoEl);
+  }
+
+  /**
    * Updates the media track (audio or video) source for a specific participant
    * and plays the updated track. It checks if the source track needs to be
    * updated and performs the update if necessary, ensuring playback of the
@@ -310,14 +391,35 @@ class DailyCallManager {
    */
   startOrUpdateTrack(trackType, track, participantId) {
     // Construct the selector string or ID based on the trackType.
-    const selector =
-      trackType === 'video'
-        ? `#video-container-${participantId} video.video-element`
-        : `audio-${participantId}`;
+    // For custom audio and video tracks, we'll use a unique ID based on the track type
+    let selector;
+    console.log(
+      'Starting or updating track:',
+      trackType,
+      'for participant:',
+      participantId,
+      track
+    );
+    const isCustomAudio = track.kind === 'audio';
+    const isCustomVideo = track.kind === 'video';
+
+    if (isCustomAudio) {
+      // Custom audio tracks get their own dedicated audio element
+      selector = `${trackType}-${participantId}`;
+    } else if (isCustomVideo) {
+      // Custom video tracks get their own dedicated video element in a custom container
+      selector = `#video-container-${trackType}-${participantId} video.video-element`;
+      console.log('Custom video selector:', selector);
+    } else if (trackType === 'video') {
+      selector = `#video-container-${participantId} video.video-element`;
+    } else {
+      // Regular audio track
+      selector = `audio-${participantId}`;
+    }
 
     // Retrieve the specific media element from the DOM.
     const trackEl =
-      trackType === 'video'
+      trackType === 'video' || isCustomVideo
         ? document.querySelector(selector)
         : document.getElementById(selector);
 
@@ -364,10 +466,31 @@ class DailyCallManager {
    * @param {Object} track - The video track object.
    * @param {string} participantId - The ID of the participant.
    */
-  updateVideoUi(track, participantId) {
-    let videoEl = document
-      .getElementById(`video-container-${participantId}`)
-      .querySelector('video.video-element');
+  /**
+   * Shows or hides the video element for a participant, including managing
+   * the visibility of the video based on the track state.
+   * @param {Object} track - The video track object.
+   * @param {string} participantId - The ID of the participant.
+   * @param {string} trackType - The type of track (e.g., 'video', 'customVideo-mytrack').
+   */
+  updateVideoUi(track, participantId, trackType = 'video') {
+    // Determine the correct container ID based on track type
+    const isCustomVideo = track.customTrack && track.kind === 'video';
+    const containerId = isCustomVideo
+      ? `video-container-${trackType}-${participantId}`
+      : `video-container-${participantId}`;
+
+    const videoContainer = document.getElementById(containerId);
+    if (!videoContainer) {
+      console.error(`Video container ${containerId} not found`);
+      return;
+    }
+
+    const videoEl = videoContainer.querySelector('video.video-element');
+    if (!videoEl) {
+      console.error(`Video element not found in container ${containerId}`);
+      return;
+    }
 
     switch (track.state) {
       case 'off':
@@ -385,20 +508,43 @@ class DailyCallManager {
   }
 
   /**
-   * Cleans up specified media track types (e.g., 'video', 'audio') for a given
-   * participant by stopping the tracks and removing their corresponding
-   * elements from the DOM. This is essential for properly managing resources
-   * when participants leave or change their track states.
-   * @param {Array} trackTypes - An array of track types to destroy, e.g.,
-   * ['video', 'audio'].
+   * Cleans up specified media tracks for a given participant by stopping the
+   * tracks and removing their corresponding elements from the DOM. This is
+   * essential for properly managing resources when participants leave or
+   * change their track states.
+   * @param {Array} trackData - An array of objects with {trackType, trackInfo},
+   * e.g., [{trackType: 'video', trackInfo: {...}}, ...].
    * @param {string} participantId - The ID of the participant.
    */
-  destroyTracks(trackTypes, participantId) {
-    trackTypes.forEach((trackType) => {
-      const elementId = `${trackType}-${participantId}`;
+  destroyTracks(trackData, participantId) {
+    trackData.forEach(({ trackType, trackInfo }) => {
+      let elementId;
+
+      // Determine the correct element ID based on track type
+      if (trackInfo?.kind === 'audio') {
+        // Custom audio tracks have dedicated audio elements
+        elementId = `${trackType}-${participantId}`;
+      } else if (trackInfo?.kind === 'video') {
+        // Custom video tracks have dedicated video containers
+        elementId = `video-container-${trackType}-${participantId}`;
+      } else {
+        // Regular tracks use standard naming
+        elementId = `${trackType}-${participantId}`;
+      }
+
       const element = document.getElementById(elementId);
       if (element) {
-        element.srcObject = null; // Release media resources
+        // For video containers, clean up the video element inside
+        const isCustomVideo = trackInfo?.kind === 'video';
+        if (trackType === 'video' || isCustomVideo) {
+          const videoEl = element.querySelector('video.video-element');
+          if (videoEl) {
+            videoEl.srcObject = null;
+          }
+        } else {
+          // For audio elements, clean up directly
+          element.srcObject = null;
+        }
         element.parentNode.removeChild(element); // Remove element from the DOM
       }
     });
@@ -422,7 +568,7 @@ class DailyCallManager {
    * Updates the UI to reflect the current states of the local participant's
    * camera and microphone.
    * @param {string} trackType - The type of track, either 'video' for cameras
-   * or 'audio' for microphones.
+   * or 'audio' for microphones, or custom track types.
    * @param {Object} trackInfo - The track object.
    */
   updateUiForDevicesState(trackType, trackInfo) {
@@ -435,6 +581,24 @@ class DailyCallManager {
       // For audio, set the mic state
       document.getElementById('mic-state').textContent = `Mic: ${
         this.call.localAudio() ? 'On' : 'Off'
+      }`;
+    } else if (trackInfo?.kind === 'audio') {
+      // For custom audio tracks, update UI to show custom track name
+      // Extract track name from trackType (format: customAudio-name)
+      const trackName = trackType.replace('customAudio-', '');
+      document.getElementById(
+        'mic-state'
+      ).textContent = `Custom Audio (${trackName}): ${
+        trackInfo.state === 'playable' ? 'On' : 'Off'
+      }`;
+    } else if (trackInfo?.kind === 'video') {
+      // For custom video tracks, update UI to show custom track name
+      // Extract track name from trackType (format: customVideo-name)
+      const trackName = trackType.replace('customVideo-', '');
+      document.getElementById(
+        'camera-state'
+      ).textContent = `Custom Video (${trackName}): ${
+        trackInfo.state === 'playable' ? 'On' : 'Off'
       }`;
     }
   }
@@ -536,17 +700,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dailyCallManager = new DailyCallManager();
 
   // Bind the join call action to the join button.
-  document
-    .getElementById('join-btn')
-    .addEventListener('click', async function () {
-      const roomUrl = document.getElementById('room-url').value.trim();
-      const joinToken =
-        document.getElementById('join-token').value.trim() || null;
-      await dailyCallManager.joinRoom(roomUrl, joinToken);
-    });
+  document.getElementById('join-btn').addEventListener('click', async () => {
+    const roomUrl = document.getElementById('room-url').value.trim();
+    const joinToken =
+      document.getElementById('join-token').value.trim() || null;
+    await dailyCallManager.joinRoom(roomUrl, joinToken);
+  });
 
   // Bind the leave call action to the leave button.
-  document.getElementById('leave-btn').addEventListener('click', function () {
+  document.getElementById('leave-btn').addEventListener('click', () => {
     dailyCallManager.leave();
   });
 });
